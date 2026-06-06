@@ -9,6 +9,7 @@ import {
   Map as MapIcon,
 } from "lucide-react";
 import { ShaderBackground } from "@/components/shader-background";
+import { FarmSwitcher } from "@/components/farm-switcher";
 
 const navItems = [
   { href: "/operacao", label: "Centro de Operações", icon: Radar },
@@ -23,6 +24,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="od-console">
       <ShaderBackground />
+      <FarmSwitcher />
       <div className="od-shell">
         {/* NAV RAIL */}
         <aside className="od-rail">

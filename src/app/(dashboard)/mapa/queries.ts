@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { getFazendaContext } from "@/lib/fazenda-context";
 
 const TRILHA_MAX = 15; // pontos de rota por ativo
 
@@ -7,7 +8,10 @@ const TRILHA_MAX = 15; // pontos de rota por ativo
  * consumo, combustível e a trilha recente (rota) de posições GPS.
  */
 export async function getMapaFrota() {
+  const ctx = getFazendaContext(); // fazenda selecionada (null = todas)
+
   const ativos = await db.ativo.findMany({
+    where: ctx ? { fazendaId: ctx } : undefined,
     include: {
       fazenda: { select: { nome: true } },
       posicoes: { orderBy: { tick: "desc" }, take: TRILHA_MAX },
