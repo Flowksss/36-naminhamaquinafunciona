@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { EstadoFrota } from "./queries";
 import { AutoSim } from "@/components/auto-sim";
 import {
@@ -18,9 +19,16 @@ const statusLabel: Record<string, string> = {
 };
 
 export function OperacaoClient({ estado }: { estado: EstadoFrota }) {
-  const recs = [...estado.recomendacoes].sort(
-    (a, b) => ordemSev[a.severidade as keyof typeof ordemSev] - ordemSev[b.severidade as keyof typeof ordemSev]
-  );
+  const [filtroSev, setFiltroSev] = useState<string>("TODAS");
+  const [filtroTipo, setFiltroTipo] = useState<string>("TODOS");
+
+  const recs = [...estado.recomendacoes]
+    .filter(r => filtroSev === "TODAS" || r.severidade === filtroSev)
+    .filter(r => filtroTipo === "TODOS" || r.tipo === filtroTipo)
+    .sort(
+      (a, b) => ordemSev[a.severidade as keyof typeof ordemSev] - ordemSev[b.severidade as keyof typeof ordemSev]
+    );
+
   const emFila = estado.filaPorUnidade.reduce((s, u) => s + u.fila, 0);
   const consumoMedio = estado.ativos.length
     ? (estado.ativos.reduce((s, a) => s + a.consumoAtual, 0) / estado.ativos.length).toFixed(1)
@@ -40,19 +48,37 @@ CCT <span>SINCRO</span> · Centro de Operações
         <Kpi label="Ativos" value={String(estado.ativos.length)} />
         <Kpi label="Em Fila" value={String(emFila)} accent={emFila >= 4 ? "amber" : undefined} />
         <Kpi label="Consumo Médio" value={consumoMedio} unit="L/h" />
-        <Kpi label="Alertas" value={String(recs.length)} accent={recs.length ? "amber" : undefined} />
+        <Kpi label="Alertas" value={String(estado.recomendacoes.length)} accent={estado.recomendacoes.length ? "amber" : undefined} />
       </section>
 
       <section className="od-grid">
         {/* RECOMENDAÇÕES */}
         <div className="od-panel od-col">
           <div className="od-panelhead">
-            <h2>Recomendações em Tempo Real</h2>
-            <span className="od-muted">{recs.length} ativas</span>
+            <div>
+              <h2>Recomendações em Tempo Real</h2>
+              <span className="od-muted">{recs.length} ativas</span>
+            </div>
+            <div className="flex gap-3">
+              <select className="od-select !h-8 !py-1 !text-xs !w-auto !pl-3 !pr-8" value={filtroSev} onChange={e => setFiltroSev(e.target.value)}>
+                <option value="TODAS">Qualquer Severidade</option>
+                <option value="ALTA">Alta</option>
+                <option value="MEDIA">Média</option>
+                <option value="BAIXA">Baixa</option>
+              </select>
+              <select className="od-select !h-8 !py-1 !text-xs !w-auto !pl-3 !pr-8" value={filtroTipo} onChange={e => setFiltroTipo(e.target.value)}>
+                <option value="TODOS">Qualquer Tipo</option>
+                <option value="REDESPACHO">Redespacho</option>
+                <option value="FILA_ALTA">Fila Alta</option>
+                <option value="ALERTA_CONSUMO">Consumo</option>
+                <option value="ABASTECIMENTO">Combustível</option>
+                <option value="MANUTENCAO">Manutenção</option>
+              </select>
+            </div>
           </div>
           <div className="od-feed">
             {recs.length === 0 ? (
-              <div className="od-empty">Nenhuma recomendação. Avance a simulação para gerar decisões.</div>
+              <div className="od-empty">Nenhuma recomendação atende aos filtros atuais.</div>
             ) : recs.map((r) => {
               const Icon = tipoIcon[r.tipo] ?? AlertTriangle;
               return (
