@@ -65,13 +65,27 @@ export function MapaClient({ data }: { data: MapaFrota }) {
             <div className="od-empty">Sem posições GPS. Avance a simulação para gerar trilhas.</div>
           ) : (
             <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "100%", display: "block" }}>
-              {/* grid de fundo */}
+              {/* fundo sólido */}
+              <rect width={W} height={H} fill="var(--od-bg)" />
+              
+              {/* grid de fundo melhorado */}
               <defs>
                 <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
-                  <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
+                  <path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
                 </pattern>
+                {/* linhas de setor / cruzes */}
+                <pattern id="grid-large" width="200" height="200" patternUnits="userSpaceOnUse">
+                  <rect width="200" height="200" fill="url(#grid)" />
+                  <path d="M 200 0 L 0 0 0 200" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+                </pattern>
+                {/* brilho radial no centro */}
+                <radialGradient id="map-glow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="var(--od-accent)" stopOpacity="0.05" />
+                  <stop offset="100%" stopColor="var(--od-bg)" stopOpacity="0" />
+                </radialGradient>
               </defs>
-              <rect width={W} height={H} fill="url(#grid)" />
+              <rect width={W} height={H} fill="url(#grid-large)" />
+              <rect width={W} height={H} fill="url(#map-glow)" pointerEvents="none" />
 
               {/* rotas */}
               {data.machines.map((m) => {
@@ -106,6 +120,18 @@ export function MapaClient({ data }: { data: MapaFrota }) {
                   </g>
                 );
               })}
+
+              {/* Status Legend */}
+              <g transform={`translate(20, ${H - 120})`}>
+                <rect x={0} y={0} width={160} height={110} fill="var(--od-surface)" stroke="var(--od-border)" strokeWidth={1} rx={4} opacity={0.9} />
+                <text x={12} y={20} fontSize={12} fill="var(--od-fg)" fontWeight="bold">Legenda de Status</text>
+                {Object.entries(statusLabel).map(([status, label], i) => (
+                  <g key={status} transform={`translate(12, ${40 + i * 16})`}>
+                    <circle cx={4} cy={-4} r={4} fill={STATUS_COR[status]} />
+                    <text x={14} y={0} fontSize={11} fill="var(--od-muted)">{label}</text>
+                  </g>
+                ))}
+              </g>
             </svg>
           )}
         </div>

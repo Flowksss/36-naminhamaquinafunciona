@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   MapPin,
-  DollarSign,
   Radar,
   Map as MapIcon,
 } from "lucide-react";
@@ -16,7 +15,6 @@ const navItems = [
   { href: "/mapa", label: "Mapa GPS", icon: MapIcon },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/fazendas", label: "Unidades", icon: MapPin },
-  { href: "/financeiro", label: "Financeiro", icon: DollarSign },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -28,7 +26,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="od-shell">
         {/* NAV RAIL */}
         <aside className="od-rail">
-          <div className="od-logo">AT</div>
+          <div className="od-logo">CS</div>
           <nav className="od-nav">
             {navItems.map(({ href, label, icon: Icon }) => {
               const active = pathname === href;

@@ -40,7 +40,7 @@ export function OperacaoClient({ estado }: { estado: EstadoFrota }) {
     <>
       <header className="od-topbar">
         <div className="od-title">
-          Agro<span>Tech</span> · Centro de Operações
+CCT <span>SINCRO</span> · Centro de Operações
           <span className="od-cycle">Ciclo #{estado.tick}</span>
         </div>
         <button className="od-btn" onClick={handleAvancar} disabled={pending}>
