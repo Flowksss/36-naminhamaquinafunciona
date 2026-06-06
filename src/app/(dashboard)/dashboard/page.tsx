@@ -1,41 +1,36 @@
-import { formatCurrency } from "@/lib/utils";
-import { getDashboardStats, getFluxoMensal, getEconomia } from "./queries";
-import { FluxoChart } from "./fluxo-chart";
+import { getDashboardStats, getEconomia, getAtivosPorStatus } from "./queries";
+import { StatusChart } from "./status-chart";
 
 export const dynamic = "force-dynamic";
 
+const brl = (v: number) =>
+  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(v);
+
 export default async function DashboardPage() {
-  const [stats, fluxo, economia] = await Promise.all([
+  const [stats, economia, statusDist] = await Promise.all([
     getDashboardStats(),
-    getFluxoMensal(),
-    getEconomia()
+    getEconomia(),
+    getAtivosPorStatus(),
   ]);
 
   const cards = [
-    { title: "Fazendas Cadastradas", value: stats.fazendas, unit: "fazendas" },
-    { title: "Safras em Andamento", value: stats.safras, unit: "safras" },
-    { title: "Receita do Mês", value: formatCurrency(stats.receitaMes), unit: "" },
-    { title: "Despesas do Mês", value: formatCurrency(stats.despesaMes), unit: "" },
-  ];
-
-  const roiCards = [
-    { title: "Desperdício Atual", value: economia.litrosDesperdicioHora, unit: "L/h" },
-    { title: "Economia Diária", value: formatCurrency(economia.economiaPotencialDia), unit: "" },
-    { title: "Economia Potencial/mês", value: formatCurrency(economia.economiaPotencialMes), unit: "" },
-    { title: "Alertas Ativos", value: economia.alertasAtivos, unit: "recomendações" },
+    { title: "Ativos", value: String(stats.ativos), unit: "na frota", accent: false },
+    { title: "Em Operação", value: String(stats.emOperacao), unit: "ativos", accent: false },
+    { title: "Alertas Ativos", value: String(stats.alertas), unit: "recomendações", accent: stats.alertas > 0 },
+    { title: "Manutenções", value: String(stats.manutencoes), unit: "pendentes", accent: stats.manutencoes > 0 },
   ];
 
   return (
     <>
       <header className="od-topbar">
-        <h1 className="od-title">Dashboard <span>Visão Geral</span></h1>
+        <h1 className="od-title">Dashboard <span>Visão Operacional</span></h1>
       </header>
-      
+
       <div className="od-kpis mt-4">
         {cards.map((card) => (
-          <div key={card.title} className="od-panel od-kpi">
+          <div key={card.title} className="od-panel od-kpi" style={card.accent ? { borderColor: "var(--od-amber)" } : undefined}>
             <span className="od-kpilabel">{card.title}</span>
-            <span className="od-kpivalue">
+            <span className="od-kpivalue" style={card.accent ? { color: "var(--od-amber)" } : undefined}>
               {card.value}
               {card.unit && <small> {card.unit}</small>}
             </span>
@@ -43,30 +38,24 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      <div className="mt-8 mb-4 px-2">
-        <h2 className="text-xl font-bold text-[#F3F4F6] flex items-center gap-2">
-          Eficiência da Frota <span className="text-[#3b82f6]">| ROI</span>
-        </h2>
-      </div>
-      
-      <div className="od-kpis">
-        {roiCards.map((card) => (
-          <div key={card.title} className="od-panel od-kpi" style={{ borderColor: 'rgba(59, 130, 246, 0.3)' }}>
-            <span className="od-kpilabel">{card.title}</span>
-            <span className="od-kpivalue text-[#3b82f6]">
-              {card.value}
-              {card.unit && <small className="text-[#9CA3AF]"> {card.unit}</small>}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-8 od-panel">
-        <div className="od-panelhead">
-          <h2>Fluxo de Caixa</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-[18px] mt-6">
+        {/* Economia / ROI — destaque do pitch */}
+        <div className="od-panel p-6 flex flex-col justify-center">
+          <span className="od-kpilabel">Economia Potencial / mês</span>
+          <span className="od-kpivalue text-[var(--od-accent)]" style={{ fontSize: 32 }}>
+            {brl(economia.economiaPotencialMes)}
+          </span>
+          <p className="od-muted mt-2">
+            {economia.litrosDesperdicioHora} L/h acima da média · {brl(economia.economiaPotencialDia)}/dia
+          </p>
         </div>
-        <div className="p-6">
-          <FluxoChart data={fluxo} />
+
+        {/* Distribuição da frota */}
+        <div className="od-panel lg:col-span-2">
+          <div className="od-panelhead"><h2>Distribuição da Frota</h2></div>
+          <div className="p-6">
+            <StatusChart data={statusDist} />
+          </div>
         </div>
       </div>
     </>
