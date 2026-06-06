@@ -189,6 +189,97 @@
   .od-input-error {
     @apply border-[var(--od-red)] focus:ring-[var(--od-red-glow)];
   }
+
+  /* Operation Specifics */
+  .od-grid {
+    @apply grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-[18px] flex-1 min-height-0;
+  }
+  .od-col {
+    @apply flex flex-col min-height-0;
+  }
+  .od-side {
+    @apply gap-[18px];
+  }
+  .od-feed {
+    @apply flex flex-col p-[14px] gap-2.5 overflow-y-auto;
+  }
+  .od-empty {
+    @apply p-8 text-center text-[var(--od-muted)] text-sm;
+  }
+  .od-rec {
+    @apply p-[14px] bg-[rgba(255,255,255,0.02)] border border-[var(--od-border)] rounded-[14px] flex items-center gap-[14px] transition-all;
+    animation: od-slide 0.3s ease-out;
+  }
+  @keyframes od-slide {
+    from { opacity: 0; transform: translateX(-16px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .od-sev {
+    @apply px-2 py-1 rounded-[5px] text-[10px] font-extrabold uppercase shrink-0;
+  }
+  .od-sev-ALTA {
+    @apply bg-[var(--od-red-glow)] text-[var(--od-red)] border border-[var(--od-red)];
+  }
+  .od-sev-MEDIA {
+    @apply bg-[var(--od-amber-glow)] text-[var(--od-amber)] border border-[var(--od-amber)];
+  }
+  .od-sev-BAIXA {
+    @apply bg-[var(--od-blue-glow)] text-[var(--od-blue)] border border-[var(--od-blue)];
+  }
+  .od-recicon {
+    @apply text-[var(--od-accent)] flex;
+  }
+  .od-recbody {
+    @apply flex-1;
+  }
+  .od-rectipo {
+    @apply text-[10px] uppercase tracking-[0.08em] text-[var(--od-muted)] font-semibold mb-0.5;
+  }
+  .od-recmsg {
+    @apply text-[13.5px] leading-relaxed;
+  }
+  .od-units {
+    @apply p-[14px] flex flex-col gap-2.5;
+  }
+  .od-unit {
+    @apply flex justify-between items-center;
+  }
+  .od-unitname {
+    @apply text-[13px] font-medium;
+  }
+  .od-fila {
+    @apply px-2.5 py-[3px] rounded-full text-[11px] font-bold bg-[rgba(0,255,157,0.1)] text-[var(--od-accent)];
+  }
+  .od-fila-hi {
+    @apply bg-[var(--od-red-glow)] text-[var(--od-red)];
+  }
+  .od-fleetwrap {
+    @apply flex flex-col min-height-0 flex-1;
+  }
+  .od-fleetscroll {
+    @apply overflow-y-auto;
+  }
+  .od-fleet {
+    @apply w-full border-collapse;
+  }
+  .od-fleet td {
+    @apply px-4 py-2.5 text-[12.5px] border-b border-[rgba(255,255,255,0.04)];
+  }
+  .od-status {
+    @apply px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-[rgba(0,255,157,0.08)] text-[var(--od-accent)];
+  }
+  .od-fuel-low {
+    @apply text-[var(--od-red)] font-bold;
+  }
+  .od-sm {
+    @apply text-[11px];
+  }
+  .od-right {
+    @apply text-right;
+  }
+  .od-cycle {
+    @apply bg-[rgba(255,255,255,0.05)] px-3 py-1 rounded-full font-mono text-[13px] text-[var(--od-accent)] border border-[var(--od-accent-glow)];
+  }
 }
 
 .od-spin {
