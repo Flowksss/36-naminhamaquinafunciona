@@ -4,14 +4,21 @@ import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
 import { useEffect, useState } from "react";
-import GridLayout from "react-grid-layout";
 import { GripVertical, X, Plus, RotateCcw } from "lucide-react";
 import type { PainelData } from "./queries";
 import { StatusChart } from "../dashboard/status-chart";
 import { TrendChart } from "../dashboard/trend-chart";
 
+// react-grid-layout usa tipos `export =` antigos; o WidthProvider não fica
+// acessível pelo default import em runtime. Resolve via require + fallback.
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const RGL: any = require("react-grid-layout");
+const GridLayout = RGL.default ?? RGL;
+const WidthProvider = RGL.WidthProvider ?? GridLayout.WidthProvider;
+const Grid = WidthProvider(GridLayout) as React.ComponentType<Record<string, unknown>>;
+
 type Layout = { i: string; x: number; y: number; w: number; h: number };
-const Grid = (GridLayout as unknown as { WidthProvider: (c: unknown) => React.ComponentType<Record<string, unknown>> }).WidthProvider(GridLayout);
 
 const brl = (v: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(v);
