@@ -15,14 +15,19 @@ function rand(min: number, max: number) {
  * roda o motor de regras e regenera as recomendações ativas.
  */
 export async function avancarSimulacao() {
-  const sim = (await db.simState.findFirst()) ?? (await db.simState.create({ data: { tick: 0 } }));
+  const [simExistente, ativos, fazendas] = await Promise.all([
+    db.simState.findFirst(),
+    db.ativo.findMany(),
+    db.fazenda.findMany({ select: { id: true, nome: true } }),
+  ]);
+  const sim = simExistente ?? (await db.simState.create({ data: { tick: 0 } }));
   const novoTick = sim.tick + 1;
 
-  const ativos = await db.ativo.findMany();
-
   const novasPosicoes: { ativoId: string; lat: number; lng: number; tick: number }[] = [];
+  const estadoAtivos: AtivoEstado[] = [];
+  const updates = [];
 
-  // evolui cada ativo
+  // evolui cada ativo (em memória); updates disparados em paralelo depois
   for (const a of ativos) {
     const consumoAtual = Number((a.consumoMedio * rand(0.85, 1.45)).toFixed(1));
 
@@ -30,7 +35,6 @@ export async function avancarSimulacao() {
     if (nivel < 8 && Math.random() < 0.6) nivel = 100; // abastecido entre ticks
     nivel = Math.max(0, Math.round(nivel));
 
-    // transição de status com viés p/ gerar filas ocasionais
     const r = Math.random();
     let status: (typeof STATUS)[number];
     if (r < 0.4) status = "NA_FILA";
@@ -38,48 +42,42 @@ export async function avancarSimulacao() {
     else if (r < 0.85) status = "EM_TRANSITO";
     else status = "OCIOSO";
 
-    // movimento GPS: random walk (parado se NA_FILA/OCIOSO)
     const movel = status === "EM_OPERACAO" || status === "EM_TRANSITO";
     const passo = movel ? 0.04 : 0.005;
     const lat = Number(((a.lat ?? -13) + rand(-passo, passo)).toFixed(5));
     const lng = Number(((a.lng ?? -56) + rand(-passo, passo)).toFixed(5));
 
-    // horas de manutenção: acumula operando, reseta se manutenção feita
     let horas = a.horasDesdeManutencao + (movel ? rand(8, 20) : 0);
     if (horas > 360 && Math.random() < 0.5) horas = 0; // manutenção realizada
     horas = Math.round(horas);
 
-    await db.ativo.update({
-      where: { id: a.id },
-      data: { consumoAtual, nivelCombustivel: nivel, status, lat, lng, horasDesdeManutencao: horas },
-    });
+    updates.push(
+      db.ativo.update({
+        where: { id: a.id },
+        data: { consumoAtual, nivelCombustivel: nivel, status, lat, lng, horasDesdeManutencao: horas },
+      })
+    );
     novasPosicoes.push({ ativoId: a.id, lat, lng, tick: novoTick });
+    estadoAtivos.push({
+      id: a.id,
+      identificador: a.identificador,
+      status,
+      fazendaId: a.fazendaId,
+      consumoMedio: a.consumoMedio,
+      consumoAtual,
+      nivelCombustivel: nivel,
+      horasDesdeManutencao: horas,
+    });
   }
 
-  if (novasPosicoes.length > 0) {
-    await db.posicaoGPS.createMany({ data: novasPosicoes });
-  }
+  const recs = gerarRecomendacoes(estadoAtivos, fazendas as FazendaEstado[]);
 
-  // estado atualizado p/ o motor
-  const atualizados = await db.ativo.findMany();
-  const fazendas = await db.fazenda.findMany({ select: { id: true, nome: true } });
-
-  const estadoAtivos: AtivoEstado[] = atualizados.map((a) => ({
-    id: a.id,
-    identificador: a.identificador,
-    status: a.status,
-    fazendaId: a.fazendaId,
-    consumoMedio: a.consumoMedio,
-    consumoAtual: a.consumoAtual,
-    nivelCombustivel: a.nivelCombustivel,
-    horasDesdeManutencao: a.horasDesdeManutencao,
-  }));
-  const estadoFazendas: FazendaEstado[] = fazendas;
-
-  const recs = gerarRecomendacoes(estadoAtivos, estadoFazendas);
-
-  // substitui recomendações ativas pelas novas
-  await db.recomendacao.deleteMany();
+  // todas as escritas independentes em paralelo
+  await Promise.all([
+    ...updates,
+    db.posicaoGPS.createMany({ data: novasPosicoes }),
+    db.recomendacao.deleteMany(),
+  ]);
   if (recs.length > 0) {
     await db.recomendacao.createMany({
       data: recs.map((r) => ({
@@ -98,5 +96,7 @@ export async function avancarSimulacao() {
 
   revalidatePath("/operacao");
   revalidatePath("/mapa");
+  revalidatePath("/dashboard");
+  revalidatePath("/planos");
   return { tick: novoTick, totalRecomendacoes: recs.length };
 }

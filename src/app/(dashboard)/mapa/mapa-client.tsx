@@ -51,6 +51,13 @@ export function MapaClient({ data }: { data: MapaFrota }) {
       <header className="od-topbar">
         <div className="od-title">
           Mapa <span>GPS da Frota</span>
+          <div className="flex items-center gap-1.5 ml-2 bg-[rgba(0,255,157,0.1)] px-2.5 py-1 rounded-full border border-[var(--od-accent-glow)]">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--od-accent)] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--od-accent)]"></span>
+            </span>
+            <span className="text-[10px] text-[var(--od-accent)] font-bold uppercase tracking-wider leading-none mt-[1px]">Ao Vivo</span>
+          </div>
         </div>
         <button className="od-btn" onClick={handleAvancar} disabled={pending}>
           {pending ? <Loader2 size={16} className="od-spin" /> : <Play size={16} />}
@@ -83,24 +90,66 @@ export function MapaClient({ data }: { data: MapaFrota }) {
                   <stop offset="0%" stopColor="var(--od-accent)" stopOpacity="0.05" />
                   <stop offset="100%" stopColor="var(--od-bg)" stopOpacity="0" />
                 </radialGradient>
+
+                {/* setas das rotas */}
+                {Object.entries(STATUS_COR).map(([status, cor]) => (
+                  <marker key={`arrow-${status}`} id={`arrow-${status}`} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill={cor} opacity="0.8" />
+                  </marker>
+                ))}
+
+                {/* gradientes das rotas */}
+                {data.machines.map(m => {
+                  if (m.rota.length < 2) return null;
+                  const start = m.rota[0], end = m.rota[m.rota.length - 1];
+                  return (
+                    <linearGradient key={`grad-${m.id}`} id={`grad-${m.id}`} x1={px(start.lng)} y1={py(start.lat)} x2={px(end.lng)} y2={py(end.lat)} gradientUnits="userSpaceOnUse">
+                      <stop offset="0%" stopColor={STATUS_COR[m.status] ?? "var(--od-muted)"} stopOpacity="0.05" />
+                      <stop offset="100%" stopColor={STATUS_COR[m.status] ?? "var(--od-muted)"} stopOpacity="0.9" />
+                    </linearGradient>
+                  );
+                })}
               </defs>
               <rect width={W} height={H} fill="url(#grid-large)" />
               <rect width={W} height={H} fill="url(#map-glow)" pointerEvents="none" />
+
+              {/* Rótulos de coordenadas */}
+              {Array.from({ length: Math.ceil(W / 200) }).map((_, i) => {
+                const x = i * 200;
+                if (x === 0 || x >= W) return null;
+                const lng = minLng + ((x - PAD) / (W - 2 * PAD)) * spanLng;
+                return (
+                  <text key={`x-${x}`} x={x + 4} y={14} fontSize={10} fill="var(--od-muted)" opacity={0.5} fontFamily="JetBrains Mono, monospace">
+                    {lng.toFixed(4)}°
+                  </text>
+                );
+              })}
+              {Array.from({ length: Math.ceil(H / 200) }).map((_, i) => {
+                const y = i * 200;
+                if (y === 0 || y >= H) return null;
+                const lat = maxLat - ((y - PAD) / (H - 2 * PAD)) * spanLat;
+                return (
+                  <text key={`y-${y}`} x={4} y={y - 4} fontSize={10} fill="var(--od-muted)" opacity={0.5} fontFamily="JetBrains Mono, monospace">
+                    {lat.toFixed(4)}°
+                  </text>
+                );
+              })}
 
               {/* rotas */}
               {data.machines.map((m) => {
                 if (m.rota.length < 2) return null;
                 const d = m.rota.map((p, i) => `${i === 0 ? "M" : "L"} ${px(p.lng).toFixed(1)} ${py(p.lat).toFixed(1)}`).join(" ");
-                const cor = STATUS_COR[m.status] ?? "var(--od-muted)";
                 return (
                   <path
                     key={`rota-${m.id}`}
                     d={d}
                     fill="none"
-                    stroke={cor}
-                    strokeWidth={m.id === selId ? 2.5 : 1}
-                    strokeOpacity={m.id === selId ? 0.9 : 0.35}
-                    strokeDasharray="4 4"
+                    stroke={`url(#grad-${m.id})`}
+                    strokeWidth={m.id === selId ? 3 : 1.5}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    markerEnd={`url(#arrow-${m.status})`}
+                    strokeDasharray={m.id === selId ? "none" : "4 4"}
                   />
                 );
               })}
@@ -112,9 +161,14 @@ export function MapaClient({ data }: { data: MapaFrota }) {
                 const ativo = m.id === selId;
                 return (
                   <g key={m.id} onClick={() => setSelId(m.id)} style={{ cursor: "pointer" }}>
-                    {ativo && <circle cx={x} cy={y} r={16} fill={cor} opacity={0.15} />}
+                    {ativo && (
+                      <circle cx={x} cy={y} r={8} fill={cor} opacity={0.5}>
+                        <animate attributeName="r" values="8;24;8" dur="2s" repeatCount="indefinite" />
+                        <animate attributeName="opacity" values="0.5;0;0.5" dur="2s" repeatCount="indefinite" />
+                      </circle>
+                    )}
                     <circle cx={x} cy={y} r={ativo ? 8 : 6} fill={cor} stroke="var(--od-bg)" strokeWidth={2} />
-                    <text x={x + 12} y={y + 4} fontSize={13} fill="var(--od-fg)" fontFamily="JetBrains Mono, monospace">
+                    <text x={x + 12} y={y + 4} fontSize={13} fill="var(--od-fg)" fontFamily="JetBrains Mono, monospace" fontWeight={ativo ? "bold" : "normal"}>
                       {m.identificador}
                     </text>
                   </g>
@@ -131,6 +185,14 @@ export function MapaClient({ data }: { data: MapaFrota }) {
                     <text x={14} y={0} fontSize={11} fill="var(--od-muted)">{label}</text>
                   </g>
                 ))}
+              </g>
+
+              {/* Bússola */}
+              <g transform={`translate(${W - 40}, ${H - 50})`}>
+                <circle cx={0} cy={0} r={24} fill="var(--od-surface)" stroke="var(--od-border)" strokeWidth={1} opacity={0.8} />
+                <path d="M 0 -14 L 4 -2 L 0 0 L -4 -2 Z" fill="var(--od-red)" />
+                <path d="M 0 14 L 4 2 L 0 0 L -4 2 Z" fill="var(--od-muted)" />
+                <text x={0} y={-18} fontSize={10} fill="var(--od-fg)" textAnchor="middle" fontWeight="bold">N</text>
               </g>
             </svg>
           )}
