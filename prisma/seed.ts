@@ -10,6 +10,9 @@ function monthsAgo(n: number, day = 15) {
 
 async function main() {
   // --- limpa dados de demo (mantém usuários) ---
+  await db.recomendacao.deleteMany();
+  await db.ativo.deleteMany();
+  await db.simState.deleteMany();
   await db.transacao.deleteMany();
   await db.movimentoEstoque.deleteMany();
   await db.safra.deleteMany();
@@ -99,8 +102,32 @@ async function main() {
     ],
   });
 
+  // --- frota (ativos) distribuída nas unidades ---
+  const STATUS = ["EM_OPERACAO", "NA_FILA", "OCIOSO", "EM_TRANSITO"] as const;
+  const unidades = [saoJoao, boaVista, santaFe];
+  const ativos = [];
+  for (let i = 1; i <= 10; i++) {
+    const unidade = unidades[i % unidades.length];
+    const consumoMedio = 10 + Math.round(Math.random() * 6); // 10-16 L/h
+    ativos.push({
+      identificador: `CAM-${String(i).padStart(2, "0")}`,
+      tipo: "CAMINHAO" as const,
+      status: STATUS[i % STATUS.length],
+      fazendaId: unidade.id,
+      lat: -12 - Math.random() * 4,
+      lng: -55 - Math.random() * 4,
+      consumoMedio,
+      consumoAtual: consumoMedio,
+      capacidadeTanque: 400,
+      nivelCombustivel: 40 + Math.round(Math.random() * 55),
+    });
+  }
+  await db.ativo.createMany({ data: ativos });
+  await db.simState.create({ data: { tick: 0 } });
+
   const counts = {
     fazendas: await db.fazenda.count(),
+    ativos: await db.ativo.count(),
     safras: await db.safra.count(),
     insumos: await db.insumo.count(),
     fornecedores: await db.fornecedor.count(),

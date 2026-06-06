@@ -2,21 +2,15 @@ import Link from "next/link";
 import {
   LayoutDashboard,
   MapPin,
-  Wheat,
-  Package,
   DollarSign,
-  Users,
-  ShoppingCart,
+  Radar,
 } from "lucide-react";
 
 const navItems = [
+  { href: "/operacao", label: "Centro de Operações", icon: Radar },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/fazendas", label: "Fazendas", icon: MapPin },
-  { href: "/safras", label: "Safras", icon: Wheat },
-  { href: "/insumos", label: "Insumos/Estoque", icon: Package },
+  { href: "/fazendas", label: "Unidades", icon: MapPin },
   { href: "/financeiro", label: "Financeiro", icon: DollarSign },
-  { href: "/fornecedores", label: "Fornecedores", icon: ShoppingCart },
-  { href: "/clientes", label: "Clientes", icon: Users },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

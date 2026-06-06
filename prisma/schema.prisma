@@ -32,6 +32,7 @@ model Fazenda {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   safras      Safra[]
+  ativos      Ativo[]
 }
 
 model Safra {
@@ -144,4 +145,79 @@ model Transacao {
 enum TipoTransacao {
   RECEITA
   DESPESA
+}
+
+// ============================================================
+// FROTA / INTELIGÊNCIA OPERACIONAL (pivô)
+// ============================================================
+
+model Ativo {
+  id             String       @id @default(cuid())
+  identificador  String       @unique // placa ou código (ex: "CAM-32")
+  tipo           TipoAtivo    @default(CAMINHAO)
+  status         StatusAtivo  @default(OCIOSO)
+  fazendaId      String?
+  fazenda        Fazenda?     @relation(fields: [fazendaId], references: [id])
+  lat            Float?
+  lng            Float?
+  consumoMedio   Float        @default(0) // baseline L/h estimado
+  consumoAtual   Float        @default(0) // L/h corrente (do feed simulado)
+  capacidadeTanque Float?
+  nivelCombustivel Float?      // % 0-100
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+enum TipoAtivo {
+  CAMINHAO
+  COLHEDORA
+  TRATOR
+  PULVERIZADOR
+  OUTRO
+}
+
+enum StatusAtivo {
+  EM_OPERACAO
+  NA_FILA
+  EM_TRANSITO
+  OCIOSO
+  MANUTENCAO
+}
+
+model Recomendacao {
+  id              String              @id @default(cuid())
+  tick            Int                 @default(0) // qual ciclo da simulação gerou
+  tipo            TipoRecomendacao
+  severidade      Severidade          @default(MEDIA)
+  mensagem        String
+  ativoId         String?
+  fazendaOrigemId String?
+  fazendaDestinoId String?
+  status          StatusRecomendacao  @default(ATIVA)
+  createdAt       DateTime            @default(now())
+}
+
+enum TipoRecomendacao {
+  REDESPACHO
+  FILA_ALTA
+  ALERTA_CONSUMO
+  ABASTECIMENTO
+}
+
+enum Severidade {
+  BAIXA
+  MEDIA
+  ALTA
+}
+
+enum StatusRecomendacao {
+  ATIVA
+  RESOLVIDA
+}
+
+// Estado global da simulação (1 linha). Controla o "tick".
+model SimState {
+  id        String   @id @default(cuid())
+  tick      Int      @default(0)
+  updatedAt DateTime @updatedAt
 }
