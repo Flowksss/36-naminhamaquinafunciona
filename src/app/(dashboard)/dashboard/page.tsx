@@ -1,8 +1,11 @@
 import { formatCurrency } from "@/lib/utils";
-import { getDashboardStats } from "./queries";
+import { getDashboardStats, getFluxoMensal } from "./queries";
+import { FluxoChart } from "./fluxo-chart";
+
+export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const stats = await getDashboardStats();
+  const [stats, fluxo] = await Promise.all([getDashboardStats(), getFluxoMensal()]);
 
   const cards = [
     { title: "Fazendas Cadastradas", value: stats.fazendas, unit: "fazendas" },
@@ -22,6 +25,10 @@ export default async function DashboardPage() {
             {card.unit && <p className="text-xs text-muted-foreground mt-1">{card.unit}</p>}
           </div>
         ))}
+      </div>
+
+      <div className="mt-6">
+        <FluxoChart data={fluxo} />
       </div>
     </div>
   );
