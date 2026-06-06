@@ -35,7 +35,7 @@ export async function criarFazenda(_prev: FormState, formData: FormData): Promis
     return { ok: false, message: "Erro ao salvar fazenda. Tente novamente." };
   }
 
-  revalidatePath("/dashboard/fazendas");
+  revalidatePath("/fazendas");
   return { ok: true, message: "Fazenda criada com sucesso" };
 }
 
@@ -53,7 +53,7 @@ export async function atualizarFazenda(
     return { ok: false, message: "Erro ao atualizar fazenda." };
   }
 
-  revalidatePath("/dashboard/fazendas");
+  revalidatePath("/fazendas");
   return { ok: true, message: "Fazenda atualizada" };
 }
 
@@ -64,6 +64,6 @@ export async function deletarFazenda(id: string): Promise<FormState> {
     return { ok: false, message: "Erro ao excluir. Verifique se há safras vinculadas." };
   }
 
-  revalidatePath("/dashboard/fazendas");
+  revalidatePath("/fazendas");
   return { ok: true, message: "Fazenda excluída" };
 }

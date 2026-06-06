@@ -1,9 +1,24 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useEffect } from "react";
+import { useFormState, useFormStatus } from "react-dom";
 import { criarFazenda, atualizarFazenda } from "./actions";
 import { initialFormState } from "@/lib/types";
 import { Loader2 } from "lucide-react";
+
+function SubmitButton({ isEdit }: { isEdit: boolean }) {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="flex items-center justify-center rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50 w-full"
+    >
+      {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+      {isEdit ? "Atualizar Fazenda" : "Cadastrar Fazenda"}
+    </button>
+  );
+}
 
 interface FazendaFormProps {
   id?: string;
@@ -18,7 +33,7 @@ interface FazendaFormProps {
 
 export function FazendaForm({ id, initialData, onSuccess }: FazendaFormProps) {
   const action = id ? atualizarFazenda.bind(null, id) : criarFazenda;
-  const [state, formAction, isPending] = useActionState(action, initialFormState);
+  const [state, formAction] = useFormState(action, initialFormState);
 
   useEffect(() => {
     if (state.ok && onSuccess) {
@@ -89,14 +104,7 @@ export function FazendaForm({ id, initialData, onSuccess }: FazendaFormProps) {
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="flex items-center justify-center rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50 w-full"
-      >
-        {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-        {id ? "Atualizar Fazenda" : "Cadastrar Fazenda"}
-      </button>
+      <SubmitButton isEdit={!!id} />
     </form>
   );
 }

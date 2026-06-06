@@ -11,12 +11,12 @@ import {
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/fazendas", label: "Fazendas", icon: MapPin },
-  { href: "/dashboard/safras", label: "Safras", icon: Wheat },
-  { href: "/dashboard/insumos", label: "Insumos/Estoque", icon: Package },
-  { href: "/dashboard/financeiro", label: "Financeiro", icon: DollarSign },
-  { href: "/dashboard/fornecedores", label: "Fornecedores", icon: ShoppingCart },
-  { href: "/dashboard/clientes", label: "Clientes", icon: Users },
+  { href: "/fazendas", label: "Fazendas", icon: MapPin },
+  { href: "/safras", label: "Safras", icon: Wheat },
+  { href: "/insumos", label: "Insumos/Estoque", icon: Package },
+  { href: "/financeiro", label: "Financeiro", icon: DollarSign },
+  { href: "/fornecedores", label: "Fornecedores", icon: ShoppingCart },
+  { href: "/clientes", label: "Clientes", icon: Users },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

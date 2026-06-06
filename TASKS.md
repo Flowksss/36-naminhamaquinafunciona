@@ -31,18 +31,29 @@ const initialFormState: FormState = { ok: false };
 async function criarX(prevState: FormState, formData: FormData): Promise<FormState>
 ```
 
-**Como a UI (Gemini) consome — padrão fixo:**
+**Como a UI (Gemini) consome — padrão fixo (React 18 / Next 14):**
+> ⚠️ Projeto é React 18 — NÃO existe `useActionState`. Usar `useFormState` + `useFormStatus` de `react-dom`.
 ```tsx
 "use client";
-import { useActionState } from "react";
+import { useEffect } from "react";
+import { useFormState, useFormStatus } from "react-dom";
 import { initialFormState } from "@/lib/types";
 import { criarFazenda } from "./actions";
 
-const [state, formAction] = useActionState(criarFazenda, initialFormState);
-// <form action={formAction}>
-// erro por campo: state.errors?.nome
-// sucesso: state.ok === true
+// pending vem de useFormStatus em um componente FILHO do <form>:
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return <button type="submit" disabled={pending}>{pending ? "..." : "Salvar"}</button>;
+}
+
+const [state, formAction] = useFormState(criarFazenda, initialFormState); // 2-tuple, sem isPending
+// <form action={formAction}> ... <SubmitButton /> </form>
+// erro por campo: state.errors?.nome  ·  sucesso: state.ok === true
 ```
+
+**Convenção de ROTAS (route group `(dashboard)` NÃO vira segmento de URL):**
+- URLs reais são root: `/fazendas`, `/safras`, `/insumos`, `/financeiro`, `/fornecedores`, `/clientes`. Home = `/dashboard`.
+- Nav (`layout.tsx`) e `revalidatePath()` usam esses paths root. NÃO usar prefixo `/dashboard/...`.
 
 **Regras do contrato:**
 - `revalidatePath()` mora na ACTION (Claude), nunca no form.
