@@ -1,11 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { avancarSimulacao } from "./actions";
 import type { EstadoFrota } from "./queries";
+import { AutoSim } from "@/components/auto-sim";
 import {
-  Radar, Play, Loader2,
   AlertTriangle, Fuel, ArrowRightLeft, Users, Wrench, type LucideIcon,
 } from "lucide-react";
 
@@ -21,13 +18,6 @@ const statusLabel: Record<string, string> = {
 };
 
 export function OperacaoClient({ estado }: { estado: EstadoFrota }) {
-  const [pending, setPending] = useState(false);
-
-  async function handleAvancar() {
-    setPending(true);
-    try { await avancarSimulacao(); } finally { setPending(false); }
-  }
-
   const recs = [...estado.recomendacoes].sort(
     (a, b) => ordemSev[a.severidade as keyof typeof ordemSev] - ordemSev[b.severidade as keyof typeof ordemSev]
   );
@@ -43,10 +33,7 @@ export function OperacaoClient({ estado }: { estado: EstadoFrota }) {
 CCT <span>SINCRO</span> · Centro de Operações
           <span className="od-cycle">Ciclo #{estado.tick}</span>
         </div>
-        <button className="od-btn" onClick={handleAvancar} disabled={pending}>
-          {pending ? <Loader2 size={16} className="od-spin" /> : <Play size={16} />}
-          {pending ? "Processando" : "Avançar Simulação"}
-        </button>
+        <AutoSim />
       </header>
 
       <section className="od-kpis">
