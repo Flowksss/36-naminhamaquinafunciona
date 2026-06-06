@@ -1,0 +1,147 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(OPERADOR)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  ADMIN
+  GERENTE
+  OPERADOR
+}
+
+model Fazenda {
+  id          String   @id @default(cuid())
+  nome        String
+  area        Float
+  localizacao String
+  tipoSolo    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  safras      Safra[]
+}
+
+model Safra {
+  id                   String      @id @default(cuid())
+  fazendaId            String
+  fazenda              Fazenda     @relation(fields: [fazendaId], references: [id])
+  cultura              String
+  dataPlantio          DateTime
+  dataColheitaPrevista DateTime
+  dataColheitaReal     DateTime?
+  areaPlantada         Float
+  status               StatusSafra @default(PLANEJADA)
+  quantidadePrevista   Float?
+  quantidadeReal       Float?
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+  movimentos           MovimentoEstoque[]
+  transacoes           Transacao[]
+}
+
+enum StatusSafra {
+  PLANEJADA
+  EM_ANDAMENTO
+  COLHIDA
+  CANCELADA
+}
+
+model Insumo {
+  id                String     @id @default(cuid())
+  nome              String
+  tipo              TipoInsumo
+  unidade           String
+  quantidadeEstoque Float      @default(0)
+  estoqueMinimo     Float      @default(0)
+  precoUnitario     Float?
+  fornecedorId      String?
+  fornecedor        Fornecedor? @relation(fields: [fornecedorId], references: [id])
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  movimentos        MovimentoEstoque[]
+}
+
+enum TipoInsumo {
+  SEMENTE
+  FERTILIZANTE
+  DEFENSIVO
+  COMBUSTIVEL
+  OUTRO
+}
+
+model MovimentoEstoque {
+  id         String        @id @default(cuid())
+  insumoId   String
+  insumo     Insumo        @relation(fields: [insumoId], references: [id])
+  safraId    String?
+  safra      Safra?        @relation(fields: [safraId], references: [id])
+  tipo       TipoMovimento
+  quantidade Float
+  data       DateTime      @default(now())
+  observacao String?
+  createdAt  DateTime      @default(now())
+}
+
+enum TipoMovimento {
+  ENTRADA
+  SAIDA
+}
+
+model Fornecedor {
+  id         String      @id @default(cuid())
+  nome       String
+  cnpj       String?     @unique
+  email      String?
+  telefone   String?
+  endereco   String?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  insumos    Insumo[]
+  transacoes Transacao[]
+}
+
+model Cliente {
+  id         String      @id @default(cuid())
+  nome       String
+  cnpj       String?     @unique
+  email      String?
+  telefone   String?
+  endereco   String?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  transacoes Transacao[]
+}
+
+model Transacao {
+  id           String        @id @default(cuid())
+  tipo         TipoTransacao
+  valor        Float
+  descricao    String
+  data         DateTime
+  safraId      String?
+  safra        Safra?        @relation(fields: [safraId], references: [id])
+  fornecedorId String?
+  fornecedor   Fornecedor?   @relation(fields: [fornecedorId], references: [id])
+  clienteId    String?
+  cliente      Cliente?      @relation(fields: [clienteId], references: [id])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+enum TipoTransacao {
+  RECEITA
+  DESPESA
+}
