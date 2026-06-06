@@ -18,7 +18,8 @@
 ## 🎬 Pitch & Demo
 
 - 🎥 **Vídeo do pitch:** **[assistir](https://youtube.com/shorts/pXcXh9sEGbU)**
-- 📊 **Apresentação:** **[ver slides](https://docs.google.com/presentation/d/109nfhGiJbA4IHQY1wOEdpcRBxKiDheUOkE26RudHEt0/edit?usp=sharing)**
+- 📊 **Apresentação (slides):** **[ver no Google Slides](https://docs.google.com/presentation/d/109nfhGiJbA4IHQY1wOEdpcRBxKiDheUOkE26RudHEt0/edit?usp=sharing)**
+- 📄 **Pitch (PDF):** **[abrir no repositório](docs/CCT-Sincro-pitch.pdf)**
 - 🚀 **App ao vivo:** **[36-na-minha-maquina-funciona.vercel.app](https://36-na-minha-maquina-funciona.vercel.app)**
 
 > Acesso demo: `admin@agroerp.com` / `admin123`
