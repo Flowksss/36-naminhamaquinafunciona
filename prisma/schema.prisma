@@ -165,6 +165,10 @@ model Ativo {
   capacidadeTanque Float?
   nivelCombustivel Float?      // % 0-100
   horasDesdeManutencao Float   @default(0) // horas de operação desde a última manutenção
+  modelo         String?      // ex: "John Deere 8R"
+  ano            Int?
+  operador       String?      // motorista/operador responsável
+  horimetroTotal Float        @default(0) // horas totais acumuladas
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   posicoes       PosicaoGPS[]
@@ -177,6 +181,8 @@ model PosicaoGPS {
   ativo     Ativo    @relation(fields: [ativoId], references: [id], onDelete: Cascade)
   lat       Float
   lng       Float
+  consumo   Float?   // L/h naquele ciclo (histórico por ativo)
+  nivel     Float?   // % combustível naquele ciclo
   tick      Int      @default(0)
   createdAt DateTime @default(now())
 

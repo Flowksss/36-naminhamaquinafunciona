@@ -23,7 +23,7 @@ export async function avancarSimulacao() {
   const sim = simExistente ?? (await db.simState.create({ data: { tick: 0 } }));
   const novoTick = sim.tick + 1;
 
-  const novasPosicoes: { ativoId: string; lat: number; lng: number; tick: number }[] = [];
+  const novasPosicoes: { ativoId: string; lat: number; lng: number; consumo: number; nivel: number; tick: number }[] = [];
   const estadoAtivos: AtivoEstado[] = [];
   const updates = [];
 
@@ -47,17 +47,19 @@ export async function avancarSimulacao() {
     const lat = Number(((a.lat ?? -13) + rand(-passo, passo)).toFixed(5));
     const lng = Number(((a.lng ?? -56) + rand(-passo, passo)).toFixed(5));
 
-    let horas = a.horasDesdeManutencao + (movel ? rand(8, 20) : 0);
+    const ganhoHoras = movel ? rand(8, 20) : 0;
+    let horas = a.horasDesdeManutencao + ganhoHoras;
     if (horas > 360 && Math.random() < 0.5) horas = 0; // manutenção realizada
     horas = Math.round(horas);
+    const horimetro = Math.round(a.horimetroTotal + ganhoHoras);
 
     updates.push(
       db.ativo.update({
         where: { id: a.id },
-        data: { consumoAtual, nivelCombustivel: nivel, status, lat, lng, horasDesdeManutencao: horas },
+        data: { consumoAtual, nivelCombustivel: nivel, status, lat, lng, horasDesdeManutencao: horas, horimetroTotal: horimetro },
       })
     );
-    novasPosicoes.push({ ativoId: a.id, lat, lng, tick: novoTick });
+    novasPosicoes.push({ ativoId: a.id, lat, lng, consumo: consumoAtual, nivel, tick: novoTick });
     estadoAtivos.push({
       id: a.id,
       identificador: a.identificador,

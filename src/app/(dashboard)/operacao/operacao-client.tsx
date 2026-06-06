@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import type { EstadoFrota } from "./queries";
 import { AutoSim } from "@/components/auto-sim";
 import {
@@ -123,7 +124,11 @@ CCT <span>SINCRO</span> · Centro de Operações
                 <tbody>
                   {estado.ativos.map((a) => (
                     <tr key={a.id}>
-                      <td className="od-mono">{a.identificador}</td>
+                      <td className="od-mono">
+                        <Link href={`/ativo/${a.id}`} className="hover:text-[var(--od-accent)] transition-colors">
+                          {a.identificador}
+                        </Link>
+                      </td>
                       <td><span className="od-status">{statusLabel[a.status]}</span></td>
                       <td className="od-mono od-right">{a.consumoAtual.toFixed(1)}</td>
                       <td className="od-right">

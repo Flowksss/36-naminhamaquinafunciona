@@ -105,6 +105,8 @@ async function main() {
 
   // --- frota (ativos) distribuída nas unidades ---
   const STATUS = ["EM_OPERACAO", "NA_FILA", "OCIOSO", "EM_TRANSITO"] as const;
+  const MODELOS = ["John Deere 8R", "Case IH Magnum", "New Holland T7", "Volvo FH 540", "Scania R450"];
+  const OPERADORES = ["João Silva", "Maria Souza", "Pedro Alves", "Ana Lima", "Carlos Dias", "Rita Gomes", "Luís Rocha", "Marta Nunes"];
   const unidades = [saoJoao, boaVista, santaFe];
   const ativos = [];
   for (let i = 1; i <= 10; i++) {
@@ -122,10 +124,33 @@ async function main() {
       capacidadeTanque: 400,
       nivelCombustivel: 40 + Math.round(Math.random() * 55),
       horasDesdeManutencao: Math.round(Math.random() * 400), // alguns acima de 250 = manutenção
+      modelo: MODELOS[i % MODELOS.length],
+      ano: 2018 + (i % 7),
+      operador: OPERADORES[i % OPERADORES.length],
+      horimetroTotal: 2000 + Math.round(Math.random() * 6000),
     });
   }
   await db.ativo.createMany({ data: ativos });
   await db.simState.create({ data: { tick: 0 } });
+
+  // histórico GPS/consumo (8 ciclos) por ativo — perfil com tendência já populada
+  const criados = await db.ativo.findMany();
+  const posicoes = [];
+  for (const a of criados) {
+    let nivel = a.nivelCombustivel ?? 80;
+    for (let t = 1; t <= 8; t++) {
+      nivel = Math.max(10, nivel - Math.round(Math.random() * 8));
+      posicoes.push({
+        ativoId: a.id,
+        lat: (a.lat ?? -13) + (Math.random() - 0.5) * 0.15,
+        lng: (a.lng ?? -56) + (Math.random() - 0.5) * 0.15,
+        consumo: Number((a.consumoMedio * (0.85 + Math.random() * 0.5)).toFixed(1)),
+        nivel,
+        tick: t,
+      });
+    }
+  }
+  await db.posicaoGPS.createMany({ data: posicoes });
 
   // snapshots prévios (10 ciclos) para o gráfico de tendência não nascer vazio
   const snaps = [];
