@@ -192,10 +192,10 @@
 
   /* Operation Specifics */
   .od-grid {
-    @apply grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-[18px] flex-1 min-height-0;
+    @apply grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-[18px] flex-1 min-h-0;
   }
   .od-col {
-    @apply flex flex-col min-height-0;
+    @apply flex flex-col min-h-0;
   }
   .od-side {
     @apply gap-[18px];
@@ -254,7 +254,7 @@
     @apply bg-[var(--od-red-glow)] text-[var(--od-red)];
   }
   .od-fleetwrap {
-    @apply flex flex-col min-height-0 flex-1;
+    @apply flex flex-col min-h-0 flex-1;
   }
   .od-fleetscroll {
     @apply overflow-y-auto;
