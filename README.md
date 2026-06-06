@@ -19,7 +19,7 @@
 
 > **Assista ao nosso pitch:** <!-- COLE O LINK DO VÍDEO AQUI -->
 >
-> 🔗 **[ Link do vídeo do pitch ]( ADICIONE_O_LINK_AQUI )**
+> 🔗 **[ Link do vídeo do pitch ]( https://youtube.com/shorts/pXcXh9sEGbU )**
 
 ---
 
@@ -92,56 +92,9 @@ O **motor de regras** (`src/lib/fleet/engine.ts`) é uma função pura que avali
 
 ---
 
-## 🚀 Como Rodar
-
-```bash
-# 1. Instalar dependências
-npm install
-
-# 2. Configurar ambiente
-cp .env.example .env
-# preencha DATABASE_URL (Neon) e NEXTAUTH_SECRET
-
-# 3. Aplicar schema + popular dados de demonstração
-npm run db:push
-npm run db:seed
-
-# 4. Iniciar
-npm run dev
-```
-
-Acesse **http://localhost:3000** → login → escolha a unidade.
-
-**Credenciais de demonstração:**
-- `admin@agroerp.com` / `admin123`
-- `gerente@agroerp.com` / `gerente123`
-
----
-
-## 📂 Estrutura
-
-```
-src/
-  app/
-    (dashboard)/        # área autenticada (shell dark + nav)
-      operacao/         # Centro de Operações (motor de decisão)
-      mapa/             # Mapa GPS da frota
-      dashboard/        # KPIs operacionais + ROI
-      fazendas/         # Unidades
-    login/              # login em 2 etapas
-  lib/
-    fleet/engine.ts     # motor de regras (puro)
-    fazenda-context.ts  # contexto multiunidade
-  components/           # shader, farm switcher
-prisma/
-  schema.prisma        # Ativo, PosicaoGPS, Recomendacao, ...
-```
-
----
-
 ## 🏆 Hackathon
 
-Projeto desenvolvido em hackathon. Construído com colaboração multi-agente (Claude Code, Gemini, Codex).
+Projeto desenvolvido em hackathon. Construído com colaboração multi-agente (Claude Code, Gemini).
 
 <div align="center">
 
