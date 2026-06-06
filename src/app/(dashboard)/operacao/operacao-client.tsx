@@ -4,10 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { avancarSimulacao } from "./actions";
 import type { EstadoFrota } from "./queries";
-import { ShaderBackground } from "./shader-background";
 import {
   Radar, LayoutDashboard, MapPin, DollarSign, Play, Loader2,
-  AlertTriangle, Fuel, ArrowRightLeft, Users, type LucideIcon,
+  AlertTriangle, Fuel, ArrowRightLeft, Users, Map as MapIcon, type LucideIcon,
 } from "lucide-react";
 
 const ordemSev = { ALTA: 0, MEDIA: 1, BAIXA: 2 } as const;
@@ -38,111 +37,92 @@ export function OperacaoClient({ estado }: { estado: EstadoFrota }) {
     : "0";
 
   return (
-    <div className="od-console">
-      <style>{css}</style>
-      <ShaderBackground />
+    <>
+      <header className="od-topbar">
+        <div className="od-title">
+          Agro<span>Tech</span> · Centro de Operações
+          <span className="od-cycle">Ciclo #{estado.tick}</span>
+        </div>
+        <button className="od-btn" onClick={handleAvancar} disabled={pending}>
+          {pending ? <Loader2 size={16} className="od-spin" /> : <Play size={16} />}
+          {pending ? "Processando" : "Avançar Simulação"}
+        </button>
+      </header>
 
-      <div className="od-shell">
-        {/* NAV RAIL */}
-        <aside className="od-rail">
-          <div className="od-logo">AT</div>
-          <nav className="od-nav">
-            <span className="od-navitem od-active" data-label="Operações"><Radar size={22} /></span>
-            <Link href="/dashboard" className="od-navitem" data-label="Dashboard"><LayoutDashboard size={22} /></Link>
-            <Link href="/fazendas" className="od-navitem" data-label="Unidades"><MapPin size={22} /></Link>
-            <Link href="/financeiro" className="od-navitem" data-label="Financeiro"><DollarSign size={22} /></Link>
-          </nav>
-        </aside>
+      <section className="od-kpis">
+        <Kpi label="Ativos" value={String(estado.ativos.length)} />
+        <Kpi label="Em Fila" value={String(emFila)} accent={emFila >= 4 ? "amber" : undefined} />
+        <Kpi label="Consumo Médio" value={consumoMedio} unit="L/h" />
+        <Kpi label="Alertas" value={String(recs.length)} accent={recs.length ? "amber" : undefined} />
+      </section>
 
-        {/* MAIN */}
-        <main className="od-main">
-          <header className="od-topbar">
-            <div className="od-title">
-              Agro<span>Tech</span> · Centro de Operações
-              <span className="od-cycle">Ciclo #{estado.tick}</span>
+      <section className="od-grid">
+        {/* RECOMENDAÇÕES */}
+        <div className="od-panel od-col">
+          <div className="od-panelhead">
+            <h2>Recomendações em Tempo Real</h2>
+            <span className="od-muted">{recs.length} ativas</span>
+          </div>
+          <div className="od-feed">
+            {recs.length === 0 ? (
+              <div className="od-empty">Nenhuma recomendação. Avance a simulação para gerar decisões.</div>
+            ) : recs.map((r) => {
+              const Icon = tipoIcon[r.tipo] ?? AlertTriangle;
+              return (
+                <div key={r.id} className="od-rec">
+                  <span className={`od-sev od-sev-${r.severidade}`}>{r.severidade}</span>
+                  <span className="od-recicon"><Icon size={18} /></span>
+                  <div className="od-recbody">
+                    <div className="od-rectipo">{tipoLabel[r.tipo]}</div>
+                    <div className="od-recmsg">{r.mensagem}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* SIDE */}
+        <div className="od-col od-side">
+          <div className="od-panel">
+            <div className="od-panelhead"><h2>Fila por Unidade</h2></div>
+            <div className="od-units">
+              {estado.filaPorUnidade.map((u) => (
+                <div key={u.id} className="od-unit">
+                  <div>
+                    <div className="od-unitname">{u.nome}</div>
+                    <div className="od-muted od-sm">{u.ativos} ativos</div>
+                  </div>
+                  <span className={`od-fila ${u.fila >= 4 ? "od-fila-hi" : ""}`}>fila {u.fila}</span>
+                </div>
+              ))}
             </div>
-            <button className="od-btn" onClick={handleAvancar} disabled={pending}>
-              {pending ? <Loader2 size={16} className="od-spin" /> : <Play size={16} />}
-              {pending ? "Processando" : "Avançar Simulação"}
-            </button>
-          </header>
+          </div>
 
-          <section className="od-kpis">
-            <Kpi label="Ativos" value={String(estado.ativos.length)} />
-            <Kpi label="Em Fila" value={String(emFila)} accent={emFila >= 4 ? "amber" : undefined} />
-            <Kpi label="Consumo Médio" value={consumoMedio} unit="L/h" />
-            <Kpi label="Alertas" value={String(recs.length)} accent={recs.length ? "amber" : undefined} />
-          </section>
-
-          <section className="od-grid">
-            {/* RECOMENDAÇÕES */}
-            <div className="od-panel od-col">
-              <div className="od-panelhead">
-                <h2>Recomendações em Tempo Real</h2>
-                <span className="od-muted">{recs.length} ativas</span>
-              </div>
-              <div className="od-feed">
-                {recs.length === 0 ? (
-                  <div className="od-empty">Nenhuma recomendação. Avance a simulação para gerar decisões.</div>
-                ) : recs.map((r) => {
-                  const Icon = tipoIcon[r.tipo] ?? AlertTriangle;
-                  return (
-                    <div key={r.id} className="od-rec">
-                      <span className={`od-sev od-sev-${r.severidade}`}>{r.severidade}</span>
-                      <span className="od-recicon"><Icon size={18} /></span>
-                      <div className="od-recbody">
-                        <div className="od-rectipo">{tipoLabel[r.tipo]}</div>
-                        <div className="od-recmsg">{r.mensagem}</div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* SIDE */}
-            <div className="od-col od-side">
-              <div className="od-panel">
-                <div className="od-panelhead"><h2>Fila por Unidade</h2></div>
-                <div className="od-units">
-                  {estado.filaPorUnidade.map((u) => (
-                    <div key={u.id} className="od-unit">
-                      <div>
-                        <div className="od-unitname">{u.nome}</div>
-                        <div className="od-muted od-sm">{u.ativos} ativos</div>
-                      </div>
-                      <span className={`od-fila ${u.fila >= 4 ? "od-fila-hi" : ""}`}>fila {u.fila}</span>
-                    </div>
+          <div className="od-panel od-fleetwrap">
+            <div className="od-panelhead"><h2>Frota ({estado.ativos.length})</h2></div>
+            <div className="od-fleetscroll">
+              <table className="od-fleet">
+                <tbody>
+                  {estado.ativos.map((a) => (
+                    <tr key={a.id}>
+                      <td className="od-mono">{a.identificador}</td>
+                      <td><span className="od-status">{statusLabel[a.status]}</span></td>
+                      <td className="od-mono od-right">{a.consumoAtual.toFixed(1)}</td>
+                      <td className="od-right">
+                        <span className={(a.nivelCombustivel ?? 0) < 15 ? "od-fuel-low" : "od-muted"}>
+                          {a.nivelCombustivel ?? 0}%
+                        </span>
+                      </td>
+                    </tr>
                   ))}
-                </div>
-              </div>
-
-              <div className="od-panel od-fleetwrap">
-                <div className="od-panelhead"><h2>Frota ({estado.ativos.length})</h2></div>
-                <div className="od-fleetscroll">
-                  <table className="od-fleet">
-                    <tbody>
-                      {estado.ativos.map((a) => (
-                        <tr key={a.id}>
-                          <td className="od-mono">{a.identificador}</td>
-                          <td><span className="od-status">{statusLabel[a.status]}</span></td>
-                          <td className="od-mono od-right">{a.consumoAtual.toFixed(1)}</td>
-                          <td className="od-right">
-                            <span className={(a.nivelCombustivel ?? 0) < 15 ? "od-fuel-low" : "od-muted"}>
-                              {a.nivelCombustivel ?? 0}%
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+                </tbody>
+              </table>
             </div>
-          </section>
-        </main>
-      </div>
-    </div>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }
 

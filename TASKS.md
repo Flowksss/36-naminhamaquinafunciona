@@ -72,14 +72,15 @@ Marque `[x]` ao concluir e ponha seu nome.
 
 | Módulo | Pasta | Responsável | Status |
 |--------|-------|-------------|--------|
-| Fazendas — CRUD | `src/app/(dashboard)/fazendas` | — | [ ] lista pronta, falta form |
-| Safras — CRUD | `src/app/(dashboard)/safras` | — | [ ] lista pronta, falta form |
+| Fazendas — CRUD | `src/app/(dashboard)/fazendas` | Gemini | [x] lista e form migrados |
+| Safras — CRUD | `src/app/(dashboard)/safras` | Gemini | [x] lista migrada, falta form |
 | Insumos/Estoque — CRUD + movimento | `src/app/(dashboard)/insumos` | — | [ ] lista pronta, falta form |
-| Financeiro — CRUD transações | `src/app/(dashboard)/financeiro` | — | [ ] lista pronta, falta form |
+| Financeiro — CRUD transações | `src/app/(dashboard)/financeiro` | Gemini | [x] lista e form migrados |
 | Fornecedores — CRUD | `src/app/(dashboard)/fornecedores` | — | [ ] lista pronta, falta form |
 | Clientes — CRUD | `src/app/(dashboard)/clientes` | — | [ ] lista pronta, falta form |
 | Auth — sessão + logout + guard | `src/lib/auth.ts`, `middleware.ts` | — | [ ] login pronto, falta guard |
-| Dashboard — gráficos | `src/app/(dashboard)/dashboard` | — | [ ] cards prontos |
+| Dashboard — gráficos | `src/app/(dashboard)/dashboard` | Gemini | [x] migrado para AgroTech Dark |
+| Operação — Simulação | `src/app/(dashboard)/operacao` | Gemini | [x] visual consolidado |
 
 ## Contrato compartilhado (NÃO mexer sem avisar o time)
 Arquivos que todos dependem — mudança aqui quebra todo mundo:

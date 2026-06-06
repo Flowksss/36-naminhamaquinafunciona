@@ -15,21 +15,31 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <>
+      <header className="od-topbar">
+        <h1 className="od-title">Dashboard <span>Visão Geral</span></h1>
+      </header>
+      
+      <div className="od-kpis mt-4">
         {cards.map((card) => (
-          <div key={card.title} className="bg-card border rounded-lg p-6">
-            <p className="text-sm text-muted-foreground">{card.title}</p>
-            <p className="text-3xl font-bold mt-2">{card.value}</p>
-            {card.unit && <p className="text-xs text-muted-foreground mt-1">{card.unit}</p>}
+          <div key={card.title} className="od-panel od-kpi">
+            <span className="od-kpilabel">{card.title}</span>
+            <span className="od-kpivalue">
+              {card.value}
+              {card.unit && <small> {card.unit}</small>}
+            </span>
           </div>
         ))}
       </div>
 
-      <div className="mt-6">
-        <FluxoChart data={fluxo} />
+      <div className="mt-6 od-panel">
+        <div className="od-panelhead">
+          <h2>Fluxo de Caixa</h2>
+        </div>
+        <div className="p-6">
+          <FluxoChart data={fluxo} />
+        </div>
       </div>
-    </div>
+    </>
   );
 }

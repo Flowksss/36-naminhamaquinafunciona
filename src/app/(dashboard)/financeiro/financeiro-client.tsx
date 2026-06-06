@@ -25,84 +25,90 @@ export function FinanceiroClient({ transacoes, options }: FinanceiroClientProps)
   const saldo = totalReceitas - totalDespesas;
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Financeiro</h1>
+    <>
+      <header className="od-topbar mb-6">
+        <h1 className="od-title">Financeiro <span>Fluxo de Caixa</span></h1>
         <button
           onClick={() => setIsFormOpen(!isFormOpen)}
-          className="flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+          className="od-btn"
         >
-          {isFormOpen ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+          {isFormOpen ? <X size={16} /> : <Plus size={16} />}
           {isFormOpen ? "Cancelar" : "Nova Transação"}
         </button>
-      </div>
+      </header>
 
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-card border rounded-lg p-4">
-          <p className="text-sm text-gray-500">Receitas</p>
-          <p className="text-2xl font-bold text-green-600">{formatCurrency(totalReceitas)}</p>
+      <div className="od-kpis mb-8">
+        <div className="od-panel od-kpi">
+          <span className="od-kpilabel">Receitas</span>
+          <span className="od-kpivalue text-[var(--od-accent)]">{formatCurrency(totalReceitas)}</span>
         </div>
-        <div className="bg-card border rounded-lg p-4">
-          <p className="text-sm text-gray-500">Despesas</p>
-          <p className="text-2xl font-bold text-red-600">{formatCurrency(totalDespesas)}</p>
+        <div className="od-panel od-kpi">
+          <span className="od-kpilabel">Despesas</span>
+          <span className="od-kpivalue text-[var(--od-red)]">{formatCurrency(totalDespesas)}</span>
         </div>
-        <div className="bg-card border rounded-lg p-4">
-          <p className="text-sm text-gray-500">Saldo</p>
-          <p className={`text-2xl font-bold ${saldo >= 0 ? "text-green-600" : "text-red-600"}`}>
+        <div className="od-panel od-kpi">
+          <span className="od-kpilabel">Saldo</span>
+          <span className={`od-kpivalue ${saldo >= 0 ? "text-[var(--od-accent)]" : "text-[var(--od-red)]"}`}>
             {formatCurrency(saldo)}
-          </p>
+          </span>
         </div>
       </div>
 
       {isFormOpen && (
-        <div className="mb-8">
+        <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-300">
           <TransacaoForm options={options} onSuccess={() => setIsFormOpen(false)} />
         </div>
       )}
 
-      <div className="border rounded-lg overflow-hidden bg-white shadow-sm">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b">
-            <tr>
-              <th className="text-left px-4 py-3 font-semibold text-gray-900">Data</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-900">Descrição</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-900">Safra</th>
-              <th className="text-center px-4 py-3 font-semibold text-gray-900">Tipo</th>
-              <th className="text-right px-4 py-3 font-semibold text-gray-900">Valor</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {transacoes.length === 0 ? (
+      <div className="od-panel">
+        <div className="od-panelhead">
+          <h2>Transações</h2>
+          <span className="od-muted">{transacoes.length} registros</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="od-table">
+            <thead>
               <tr>
-                <td colSpan={5} className="text-center py-12 text-gray-500">Nenhuma transação registrada</td>
+                <th>Data</th>
+                <th>Descrição</th>
+                <th>Safra</th>
+                <th className="text-center">Tipo</th>
+                <th className="text-right">Valor</th>
               </tr>
-            ) : (
-              transacoes.map((t) => (
-                <tr key={t.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 text-gray-600">{formatDate(t.data)}</td>
-                  <td className="px-4 py-3 text-gray-900">{t.descricao}</td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {t.safra ? `${t.safra.fazenda.nome} – ${t.safra.cultura}` : "—"}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                        t.tipo === "RECEITA" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                      }`}
-                    >
-                      {t.tipo === "RECEITA" ? "Receita" : "Despesa"}
-                    </span>
-                  </td>
-                  <td className={`px-4 py-3 text-right font-medium ${t.tipo === "RECEITA" ? "text-green-600" : "text-red-600"}`}>
-                    {t.tipo === "DESPESA" && "− "}
-                    {formatCurrency(t.valor)}
-                  </td>
+            </thead>
+            <tbody>
+              {transacoes.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="text-center py-12 od-muted">Nenhuma transação registrada</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                transacoes.map((t) => (
+                  <tr key={t.id}>
+                    <td className="od-muted od-mono">{formatDate(t.data)}</td>
+                    <td className="font-medium">{t.descricao}</td>
+                    <td className="od-muted text-xs">
+                      {t.safra ? `${t.safra.fazenda.nome} – ${t.safra.cultura}` : "—"}
+                    </td>
+                    <td className="text-center">
+                      <span
+                        className={`od-badge ${
+                          t.tipo === "RECEITA" ? "od-badge-accent" : "bg-[var(--od-red-glow)] text-[var(--od-red)] border border-[var(--od-red)]"
+                        }`}
+                      >
+                        {t.tipo === "RECEITA" ? "Receita" : "Despesa"}
+                      </span>
+                    </td>
+                    <td className={`text-right od-mono font-bold ${t.tipo === "RECEITA" ? "text-[var(--od-accent)]" : "text-[var(--od-red)]"}`}>
+                      {t.tipo === "DESPESA" && "− "}
+                      {formatCurrency(t.valor)}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

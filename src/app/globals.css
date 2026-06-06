@@ -22,6 +22,21 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 142.1 76.2% 36.3%;
     --radius: 0.5rem;
+
+    /* AgroTech Console Theme */
+    --od-bg: oklch(14% 0.02 240);
+    --od-surface: oklch(25% 0.04 240 / 0.4);
+    --od-fg: oklch(98% 0.01 240);
+    --od-muted: oklch(65% 0.02 240);
+    --od-border: oklch(40% 0.05 240 / 0.4);
+    --od-accent: oklch(85% 0.22 165);
+    --od-accent-glow: oklch(85% 0.22 165 / 0.3);
+    --od-red: oklch(65% 0.25 25);
+    --od-red-glow: oklch(65% 0.25 25 / 0.25);
+    --od-amber: oklch(75% 0.2 70);
+    --od-amber-glow: oklch(75% 0.2 70 / 0.2);
+    --od-blue: oklch(70% 0.15 240);
+    --od-blue-glow: oklch(70% 0.15 240 / 0.2);
   }
 
   .dark {
@@ -52,4 +67,141 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* AgroTech Console Globals */
+@layer components {
+  .od-console {
+    @apply fixed inset-0 z-40 bg-[var(--od-bg)] text-[var(--od-fg)] overflow-hidden font-sans;
+  }
+  .od-shell {
+    @apply relative z-10 flex w-full h-full;
+  }
+  .od-rail {
+    @apply w-20 flex flex-col items-center py-7 gap-9 border-r border-[var(--od-border)] bg-[rgba(10,15,20,0.55)] backdrop-blur-md;
+  }
+  .od-logo {
+    @apply text-[var(--od-accent)] text-2xl font-extrabold tracking-wider;
+  }
+  .od-nav {
+    @apply flex flex-col gap-[18px];
+  }
+  .od-navitem {
+    @apply w-[46px] h-[46px] flex items-center justify-center rounded-xl text-[var(--od-muted)] cursor-pointer transition-all relative hover:text-[var(--od-fg)] hover:bg-[rgba(255,255,255,0.05)];
+  }
+  .od-navitem.od-active {
+    @apply text-[var(--od-accent)] bg-[rgba(0,255,157,0.1)];
+  }
+  .od-navitem::after {
+    content: attr(data-label);
+    @apply absolute left-full ml-3 bg-[var(--od-bg)] px-3 py-1 rounded-md text-xs whitespace-nowrap opacity-0 pointer-events-none transition-opacity border border-[var(--od-border)] z-[100];
+  }
+  .od-navitem:hover::after {
+    @apply opacity-100;
+  }
+  .od-main {
+    @apply flex-1 flex flex-col p-7 gap-5 overflow-y-auto;
+  }
+  .od-topbar {
+    @apply flex justify-between items-center;
+  }
+  .od-title {
+    @apply text-2xl font-bold tracking-tight flex items-center gap-3;
+  }
+  .od-title span {
+    @apply text-[var(--od-accent)];
+  }
+  .od-panel {
+    @apply bg-[var(--od-surface)] backdrop-blur-2xl border border-[var(--od-border)] rounded-[20px] shadow-[0_8px_32px_rgba(0,0,0,0.37)];
+  }
+  .od-panelhead {
+    @apply px-5 py-[18px] border-b border-[var(--od-border)] flex justify-between items-center;
+  }
+  .od-panelhead h2 {
+    @apply text-[15px] uppercase tracking-wider font-bold;
+  }
+  .od-kpis {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[18px];
+  }
+  .od-kpi {
+    @apply p-5 flex flex-col gap-1.5;
+  }
+  .od-kpilabel {
+    @apply text-[11px] uppercase tracking-widest text-[var(--od-muted)] font-semibold;
+  }
+  .od-kpivalue {
+    @apply font-mono text-[26px] font-semibold;
+  }
+  .od-kpivalue small {
+    @apply text-[13px] text-[var(--od-muted)];
+  }
+  .od-btn {
+    @apply flex items-center gap-2 bg-[var(--od-accent)] text-[var(--od-bg)] border-none px-[22px] py-2.5 rounded-[14px] font-bold uppercase tracking-wider text-[13px] cursor-pointer transition-all shadow-[0_0_20px_var(--od-accent-glow)] hover:-translate-y-0.5 hover:shadow-[0_0_30px_var(--od-accent)] disabled:opacity-60 disabled:cursor-default disabled:transform-none;
+  }
+  .od-btn-secondary {
+    @apply bg-transparent text-[var(--od-accent)] border border-[var(--od-accent-glow)] shadow-none hover:bg-[var(--od-accent-glow)];
+  }
+  .od-muted {
+    @apply text-[var(--od-muted)] text-xs;
+  }
+  .od-mono {
+    @apply font-mono;
+  }
+  .od-table-wrap {
+    @apply w-full overflow-hidden rounded-2xl border border-[var(--od-border)] bg-[rgba(255,255,255,0.02)];
+  }
+  .od-table {
+    @apply w-full text-left border-collapse;
+  }
+  .od-table th {
+    @apply px-4 py-3 text-[11px] uppercase tracking-widest text-[var(--od-muted)] font-semibold border-b border-[var(--od-border)] bg-[rgba(255,255,255,0.03)];
+  }
+  .od-table td {
+    @apply px-4 py-3 text-[13px] border-b border-[rgba(255,255,255,0.04)];
+  }
+  .od-table tr:last-child td {
+    @apply border-b-0;
+  }
+  .od-table tr:hover td {
+    @apply bg-[rgba(255,255,255,0.02)];
+  }
+  .od-badge {
+    @apply inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-[var(--od-blue-glow)] text-[var(--od-blue)] border border-[var(--od-blue)];
+  }
+  .od-badge-accent {
+    @apply bg-[var(--od-accent-glow)] text-[var(--od-accent)] border border-[var(--od-accent)];
+  }
+  .od-label {
+    @apply text-[11px] uppercase tracking-widest text-[var(--od-muted)] font-bold mb-1.5 block;
+  }
+  .od-input {
+    @apply flex h-11 w-full rounded-xl border border-[var(--od-border)] bg-[rgba(255,255,255,0.03)] px-4 py-2 text-sm text-[var(--od-fg)] transition-all focus:outline-none focus:ring-2 focus:ring-[var(--od-accent-glow)] focus:border-[var(--od-accent)] placeholder:text-[rgba(255,255,255,0.2)];
+  }
+  .od-select {
+    @apply flex h-11 w-full rounded-xl border border-[var(--od-border)] bg-[rgba(255,255,255,0.03)] px-4 py-2 text-sm text-[var(--od-fg)] transition-all focus:outline-none focus:ring-2 focus:ring-[var(--od-accent-glow)] focus:border-[var(--od-accent)] appearance-none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.4)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+  }
+  .od-select option {
+    @apply bg-[var(--od-bg)] text-[var(--od-fg)];
+  }
+  .od-input-error {
+    @apply border-[var(--od-red)] focus:ring-[var(--od-red-glow)];
+  }
+}
+
+.od-spin {
+  animation: od-rot 1s linear infinite;
+}
+@keyframes od-rot {
+  to { transform: rotate(360deg); }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--od-border);
+  border-radius: 3px;
 }

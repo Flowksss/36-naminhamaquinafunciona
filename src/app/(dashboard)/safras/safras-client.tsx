@@ -19,73 +19,77 @@ const statusLabel: Record<string, string> = {
   CANCELADA: "Cancelada",
 };
 
-const statusColor: Record<string, string> = {
-  PLANEJADA: "bg-blue-100 text-blue-700",
-  EM_ANDAMENTO: "bg-green-100 text-green-700",
-  COLHIDA: "bg-gray-100 text-gray-700",
-  CANCELADA: "bg-red-100 text-red-700",
-};
-
 export function SafrasClient({ safras, fazendaOptions }: SafrasClientProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Safras</h1>
+    <>
+      <header className="od-topbar mb-6">
+        <h1 className="od-title">Safras <span>Ciclos de Produção</span></h1>
         <button
           onClick={() => setIsFormOpen(!isFormOpen)}
-          className="flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
+          className="od-btn"
         >
-          {isFormOpen ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+          {isFormOpen ? <X size={16} /> : <Plus size={16} />}
           {isFormOpen ? "Cancelar" : "Nova Safra"}
         </button>
-      </div>
+      </header>
 
       {isFormOpen && (
-        <div className="mb-8">
+        <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-300">
           <SafraForm fazendaOptions={fazendaOptions} onSuccess={() => setIsFormOpen(false)} />
         </div>
       )}
 
-      <div className="border rounded-lg overflow-hidden bg-white shadow-sm">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b">
-            <tr>
-              <th className="text-left px-4 py-3 font-semibold text-gray-900">Fazenda</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-900">Cultura</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-900">Plantio</th>
-              <th className="text-left px-4 py-3 font-semibold text-gray-900">Colheita Prev.</th>
-              <th className="text-right px-4 py-3 font-semibold text-gray-900">Área (ha)</th>
-              <th className="text-center px-4 py-3 font-semibold text-gray-900">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {safras.length === 0 ? (
+      <div className="od-panel">
+        <div className="od-panelhead">
+          <h2>Monitoramento de Safras</h2>
+          <span className="od-muted">{safras.length} total</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="od-table">
+            <thead>
               <tr>
-                <td colSpan={6} className="text-center py-12 text-gray-500">Nenhuma safra cadastrada</td>
+                <th>Fazenda</th>
+                <th>Cultura</th>
+                <th>Plantio</th>
+                <th>Colheita Prev.</th>
+                <th className="text-right">Área (ha)</th>
+                <th className="text-center">Status</th>
               </tr>
-            ) : (
-              safras.map((s) => (
-                <tr key={s.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-gray-900">{s.fazenda.nome}</td>
-                  <td className="px-4 py-3 text-gray-600">{s.cultura}</td>
-                  <td className="px-4 py-3 text-gray-600">{formatDate(s.dataPlantio)}</td>
-                  <td className="px-4 py-3 text-gray-600">{formatDate(s.dataColheitaPrevista)}</td>
-                  <td className="px-4 py-3 text-right text-gray-600">
-                    {s.areaPlantada.toLocaleString("pt-BR")}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusColor[s.status]}`}>
-                      {statusLabel[s.status]}
-                    </span>
-                  </td>
+            </thead>
+            <tbody>
+              {safras.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-12 od-muted">Nenhuma safra cadastrada</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                safras.map((s) => (
+                  <tr key={s.id}>
+                    <td className="font-semibold">{s.fazenda.nome}</td>
+                    <td className="text-[var(--od-accent)]">{s.cultura}</td>
+                    <td className="od-muted od-mono">{formatDate(s.dataPlantio)}</td>
+                    <td className="od-muted od-mono">{formatDate(s.dataColheitaPrevista)}</td>
+                    <td className="text-right od-mono">
+                      {s.areaPlantada.toLocaleString("pt-BR")}
+                    </td>
+                    <td className="text-center">
+                      <span className={`od-badge ${
+                        s.status === "EM_ANDAMENTO" ? "od-badge-accent" : 
+                        s.status === "PLANEJADA" ? "bg-[var(--od-blue-glow)] text-[var(--od-blue)] border border-[var(--od-blue)]" :
+                        s.status === "COLHIDA" ? "bg-white/10 text-white/60 border border-white/20" :
+                        "bg-[var(--od-red-glow)] text-[var(--od-red)] border border-[var(--od-red)]"
+                      }`}>
+                        {statusLabel[s.status]}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

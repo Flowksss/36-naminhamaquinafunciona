@@ -30,16 +30,13 @@ function SubmitButton({ isEdit }: { isEdit: boolean }) {
     <button
       type="submit"
       disabled={pending}
-      className="flex items-center justify-center rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50 w-full"
+      className="od-btn w-full"
     >
-      {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-      {isEdit ? "Atualizar Transação" : "Registrar Transação"}
+      {pending ? <Loader2 className="mr-2 h-4 w-4 od-spin" /> : null}
+      {isEdit ? "Atualizar Registro" : "Confirmar Lançamento"}
     </button>
   );
 }
-
-const inputBase =
-  "flex h-10 w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500";
 
 export function TransacaoForm({ options, id, initialData, onSuccess }: TransacaoFormProps) {
   const action = id ? atualizarTransacao.bind(null, id) : criarTransacao;
@@ -50,24 +47,29 @@ export function TransacaoForm({ options, id, initialData, onSuccess }: Transacao
   }, [state.ok, onSuccess]);
 
   return (
-    <form action={formAction} className="space-y-4 bg-white p-6 rounded-lg border shadow-sm">
-      <div className="grid grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <label htmlFor="tipo" className="text-sm font-medium">Tipo</label>
+    <form action={formAction} className="od-panel p-6 space-y-5 max-w-4xl mx-auto">
+      <div className="od-panelhead mb-4 -mx-6 -mt-6">
+        <h2>{id ? "Editar Lançamento" : "Novo Lançamento Financeiro"}</h2>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="space-y-1.5">
+          <label htmlFor="tipo" className="od-label">Tipo</label>
           <select
             id="tipo"
             name="tipo"
             defaultValue={initialData?.tipo ?? ""}
-            className={`${inputBase} ${state.errors?.tipo ? "border-red-500" : "border-gray-300"}`}
+            className={`od-select ${state.errors?.tipo ? "od-input-error" : ""}`}
           >
             <option value="">Selecione...</option>
-            <option value="RECEITA">Receita</option>
-            <option value="DESPESA">Despesa</option>
+            <option value="RECEITA">Receita (+)</option>
+            <option value="DESPESA">Despesa (−)</option>
           </select>
-          {state.errors?.tipo && <p className="text-sm text-red-500">{state.errors.tipo}</p>}
+          {state.errors?.tipo && <p className="text-xs text-[var(--od-red)] mt-1">{state.errors.tipo}</p>}
         </div>
-        <div className="space-y-2">
-          <label htmlFor="valor" className="text-sm font-medium">Valor (R$)</label>
+
+        <div className="space-y-1.5">
+          <label htmlFor="valor" className="od-label">Valor (R$)</label>
           <input
             id="valor"
             name="valor"
@@ -75,63 +77,60 @@ export function TransacaoForm({ options, id, initialData, onSuccess }: Transacao
             step="0.01"
             defaultValue={initialData?.valor}
             placeholder="0,00"
-            className={`${inputBase} ${state.errors?.valor ? "border-red-500" : "border-gray-300"}`}
+            className={`od-input ${state.errors?.valor ? "od-input-error" : ""}`}
           />
-          {state.errors?.valor && <p className="text-sm text-red-500">{state.errors.valor}</p>}
+          {state.errors?.valor && <p className="text-xs text-[var(--od-red)] mt-1">{state.errors.valor}</p>}
         </div>
-        <div className="space-y-2">
-          <label htmlFor="data" className="text-sm font-medium">Data</label>
+
+        <div className="space-y-1.5">
+          <label htmlFor="data" className="od-label">Data</label>
           <input
             id="data"
             name="data"
             type="date"
-            defaultValue={initialData?.data}
-            className={`${inputBase} ${state.errors?.data ? "border-red-500" : "border-gray-300"}`}
+            defaultValue={initialData?.data ?? new Date().toISOString().split("T")[0]}
+            className={`od-input ${state.errors?.data ? "od-input-error" : ""}`}
           />
-          {state.errors?.data && <p className="text-sm text-red-500">{state.errors.data}</p>}
+          {state.errors?.data && <p className="text-xs text-[var(--od-red)] mt-1">{state.errors.data}</p>}
         </div>
       </div>
 
-      <div className="space-y-2">
-        <label htmlFor="descricao" className="text-sm font-medium">Descrição</label>
+      <div className="space-y-1.5">
+        <label htmlFor="descricao" className="od-label">Descrição</label>
         <input
           id="descricao"
           name="descricao"
           defaultValue={initialData?.descricao}
           placeholder="Ex: Venda de soja safra 24/25"
-          className={`${inputBase} ${state.errors?.descricao ? "border-red-500" : "border-gray-300"}`}
+          className={`od-input ${state.errors?.descricao ? "od-input-error" : ""}`}
         />
-        {state.errors?.descricao && <p className="text-sm text-red-500">{state.errors.descricao}</p>}
+        {state.errors?.descricao && <p className="text-xs text-[var(--od-red)] mt-1">{state.errors.descricao}</p>}
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <label htmlFor="safraId" className="text-sm font-medium">
-            Safra <span className="text-gray-400">(opc.)</span>
-          </label>
-          <select id="safraId" name="safraId" defaultValue={initialData?.safraId ?? ""} className={`${inputBase} border-gray-300`}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="space-y-1.5">
+          <label htmlFor="safraId" className="od-label">Safra <small className="opacity-50">(opc.)</small></label>
+          <select id="safraId" name="safraId" defaultValue={initialData?.safraId ?? ""} className="od-select">
             <option value="">Nenhuma</option>
             {options.safras.map((s) => (
               <option key={s.id} value={s.id}>{s.fazenda.nome} – {s.cultura}</option>
             ))}
           </select>
         </div>
-        <div className="space-y-2">
-          <label htmlFor="fornecedorId" className="text-sm font-medium">
-            Fornecedor <span className="text-gray-400">(opc.)</span>
-          </label>
-          <select id="fornecedorId" name="fornecedorId" defaultValue={initialData?.fornecedorId ?? ""} className={`${inputBase} border-gray-300`}>
+
+        <div className="space-y-1.5">
+          <label htmlFor="fornecedorId" className="od-label">Fornecedor <small className="opacity-50">(opc.)</small></label>
+          <select id="fornecedorId" name="fornecedorId" defaultValue={initialData?.fornecedorId ?? ""} className="od-select">
             <option value="">Nenhum</option>
             {options.fornecedores.map((f) => (
               <option key={f.id} value={f.id}>{f.nome}</option>
             ))}
           </select>
         </div>
-        <div className="space-y-2">
-          <label htmlFor="clienteId" className="text-sm font-medium">
-            Cliente <span className="text-gray-400">(opc.)</span>
-          </label>
-          <select id="clienteId" name="clienteId" defaultValue={initialData?.clienteId ?? ""} className={`${inputBase} border-gray-300`}>
+
+        <div className="space-y-1.5">
+          <label htmlFor="clienteId" className="od-label">Cliente <small className="opacity-50">(opc.)</small></label>
+          <select id="clienteId" name="clienteId" defaultValue={initialData?.clienteId ?? ""} className="od-select">
             <option value="">Nenhum</option>
             {options.clientes.map((c) => (
               <option key={c.id} value={c.id}>{c.nome}</option>
@@ -141,7 +140,7 @@ export function TransacaoForm({ options, id, initialData, onSuccess }: Transacao
       </div>
 
       {state.message && (
-        <div className={`p-3 rounded-md text-sm ${state.ok ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
+        <div className={`p-4 rounded-xl text-xs font-bold uppercase tracking-wider ${state.ok ? "bg-[var(--od-accent-glow)] text-[var(--od-accent)]" : "bg-[var(--od-red-glow)] text-[var(--od-red)]"}`}>
           {state.message}
         </div>
       )}

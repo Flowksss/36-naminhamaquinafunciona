@@ -34,6 +34,33 @@ export async function getDashboardStats() {
   };
 }
 
+const PRECO_DIESEL = 6.1; // R$/L (referência)
+const HORAS_OPERACAO_DIA = 8;
+
+/**
+ * Economia/ROI estimada: combustível desperdiçado vem do consumo acima
+ * da média por ativo. Demonstra valor financeiro do produto.
+ */
+export async function getEconomia() {
+  const [ativos, alertas] = await Promise.all([
+    db.ativo.findMany({ select: { consumoMedio: true, consumoAtual: true } }),
+    db.recomendacao.count({ where: { status: "ATIVA" } }),
+  ]);
+
+  const litrosDesperdicioHora = ativos.reduce(
+    (acc, a) => acc + Math.max(0, a.consumoAtual - a.consumoMedio),
+    0
+  );
+  const economiaPotencialDia = litrosDesperdicioHora * HORAS_OPERACAO_DIA * PRECO_DIESEL;
+
+  return {
+    litrosDesperdicioHora: Number(litrosDesperdicioHora.toFixed(1)),
+    economiaPotencialDia: Number(economiaPotencialDia.toFixed(0)),
+    economiaPotencialMes: Number((economiaPotencialDia * 22).toFixed(0)),
+    alertasAtivos: alertas,
+  };
+}
+
 const MESES = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
 export type FluxoMensal = { mes: string; receita: number; despesa: number };

@@ -166,6 +166,20 @@ model Ativo {
   nivelCombustivel Float?      // % 0-100
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
+  posicoes       PosicaoGPS[]
+}
+
+// Trilha de posições GPS (histórico) — para mapa + rotas.
+model PosicaoGPS {
+  id        String   @id @default(cuid())
+  ativoId   String
+  ativo     Ativo    @relation(fields: [ativoId], references: [id], onDelete: Cascade)
+  lat       Float
+  lng       Float
+  tick      Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([ativoId, tick])
 }
 
 enum TipoAtivo {

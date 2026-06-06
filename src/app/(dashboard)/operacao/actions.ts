@@ -20,6 +20,8 @@ export async function avancarSimulacao() {
 
   const ativos = await db.ativo.findMany();
 
+  const novasPosicoes: { ativoId: string; lat: number; lng: number; tick: number }[] = [];
+
   // evolui cada ativo
   for (const a of ativos) {
     const consumoAtual = Number((a.consumoMedio * rand(0.85, 1.45)).toFixed(1));
@@ -36,10 +38,21 @@ export async function avancarSimulacao() {
     else if (r < 0.85) status = "EM_TRANSITO";
     else status = "OCIOSO";
 
+    // movimento GPS: random walk (parado se NA_FILA/OCIOSO)
+    const movel = status === "EM_OPERACAO" || status === "EM_TRANSITO";
+    const passo = movel ? 0.04 : 0.005;
+    const lat = Number(((a.lat ?? -13) + rand(-passo, passo)).toFixed(5));
+    const lng = Number(((a.lng ?? -56) + rand(-passo, passo)).toFixed(5));
+
     await db.ativo.update({
       where: { id: a.id },
-      data: { consumoAtual, nivelCombustivel: nivel, status },
+      data: { consumoAtual, nivelCombustivel: nivel, status, lat, lng },
     });
+    novasPosicoes.push({ ativoId: a.id, lat, lng, tick: novoTick });
+  }
+
+  if (novasPosicoes.length > 0) {
+    await db.posicaoGPS.createMany({ data: novasPosicoes });
   }
 
   // estado atualizado p/ o motor
@@ -78,5 +91,6 @@ export async function avancarSimulacao() {
   await db.simState.update({ where: { id: sim.id }, data: { tick: novoTick } });
 
   revalidatePath("/operacao");
+  revalidatePath("/mapa");
   return { tick: novoTick, totalRecomendacoes: recs.length };
 }

@@ -1,45 +1,56 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   MapPin,
   DollarSign,
   Radar,
+  Map as MapIcon,
 } from "lucide-react";
+import { ShaderBackground } from "@/components/shader-background";
 
 const navItems = [
   { href: "/operacao", label: "Centro de Operações", icon: Radar },
+  { href: "/mapa", label: "Mapa GPS", icon: MapIcon },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/fazendas", label: "Unidades", icon: MapPin },
   { href: "/financeiro", label: "Financeiro", icon: DollarSign },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex h-screen bg-background">
-      {/* Sidebar */}
-      <aside className="w-64 border-r bg-card flex flex-col">
-        <div className="p-6 border-b">
-          <h1 className="text-xl font-bold text-primary">AgroERP</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Gestão do Agronegócio</p>
-        </div>
-        <nav className="flex-1 p-4 space-y-1">
-          {navItems.map(({ href, label, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-            >
-              <Icon className="h-4 w-4" />
-              {label}
-            </Link>
-          ))}
-        </nav>
-      </aside>
+  const pathname = usePathname();
 
-      {/* Main content */}
-      <main className="flex-1 overflow-auto">
-        <div className="p-8">{children}</div>
-      </main>
+  return (
+    <div className="od-console">
+      <ShaderBackground />
+      <div className="od-shell">
+        {/* NAV RAIL */}
+        <aside className="od-rail">
+          <div className="od-logo">AT</div>
+          <nav className="od-nav">
+            {navItems.map(({ href, label, icon: Icon }) => {
+              const active = pathname === href;
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`od-navitem ${active ? "od-active" : ""}`}
+                  data-label={label}
+                >
+                  <Icon size={22} />
+                </Link>
+              );
+            })}
+          </nav>
+        </aside>
+
+        {/* MAIN */}
+        <main className="od-main">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
