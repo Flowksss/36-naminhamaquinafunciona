@@ -3,13 +3,20 @@
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ShaderBackground } from "@/components/shader-background";
+import { getContextoFazenda, setFazendaContext } from "@/lib/fazenda-actions";
+import { Loader2, ArrowRight, MapPin, Layers } from "lucide-react";
+
+type Fazenda = { id: string; nome: string };
 
 export default function LoginPage() {
   const router = useRouter();
+  const [step, setStep] = useState<1 | 2>(1);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [fazendas, setFazendas] = useState<Fazenda[]>([]);
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleCredentials(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -27,46 +34,81 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/dashboard");
+    // carrega fazendas e vai p/ etapa 2
+    const ctx = await getContextoFazenda();
+    setFazendas(ctx.fazendas);
+    setLoading(false);
+    setStep(2);
+  }
+
+  async function escolherFazenda(id: string) {
+    setLoading(true);
+    await setFazendaContext(id);
+    router.push("/operacao");
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30">
-      <div className="w-full max-w-sm bg-card border rounded-lg p-8 shadow-sm">
-        <div className="mb-6 text-center">
-          <h1 className="text-2xl font-bold text-primary">AgroERP</h1>
-          <p className="text-sm text-muted-foreground mt-1">Gestão do Agronegócio</p>
+    <div className="od-console flex items-center justify-center">
+      <ShaderBackground />
+      <div className="relative z-10 w-full max-w-md od-panel p-8">
+        <div className="mb-8 text-center">
+          <div className="od-logo text-3xl mb-1">CCT <span className="text-[var(--od-fg)]">SINCRO</span></div>
+          <p className="od-muted">Inteligência operacional para o agro</p>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="text-sm font-medium" htmlFor="email">Email</label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            />
+
+        {step === 1 ? (
+          <form onSubmit={handleCredentials} className="space-y-4">
+            <div className="space-y-1.5">
+              <label htmlFor="email" className="od-label">Email</label>
+              <input id="email" name="email" type="email" required className="od-input" placeholder="gestor@cctsincro.com" />
+            </div>
+            <div className="space-y-1.5">
+              <label htmlFor="password" className="od-label">Senha</label>
+              <input id="password" name="password" type="password" required className="od-input" placeholder="••••••••" />
+            </div>
+            {error && (
+              <div className="p-3 rounded-xl text-sm bg-[var(--od-red-glow)] text-[var(--od-red)] border border-[var(--od-red)]">
+                {error}
+              </div>
+            )}
+            <button type="submit" disabled={loading} className="od-btn w-full justify-center">
+              {loading ? <Loader2 size={16} className="od-spin" /> : <ArrowRight size={16} />}
+              {loading ? "Entrando..." : "Entrar"}
+            </button>
+          </form>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-sm text-center mb-2">Qual unidade deseja acessar?</p>
+
+            <button
+              onClick={() => escolherFazenda("ALL")}
+              disabled={loading}
+              className="w-full flex items-center gap-3 od-panel p-4 hover:border-[var(--od-accent)] transition-colors text-left disabled:opacity-50"
+            >
+              <Layers size={18} className="text-[var(--od-accent)]" />
+              <span className="font-medium">Todas as fazendas</span>
+              <span className="od-muted ml-auto text-xs">visão geral</span>
+            </button>
+
+            {fazendas.map((f) => (
+              <button
+                key={f.id}
+                onClick={() => escolherFazenda(f.id)}
+                disabled={loading}
+                className="w-full flex items-center gap-3 od-panel p-4 hover:border-[var(--od-accent)] transition-colors text-left disabled:opacity-50"
+              >
+                <MapPin size={18} className="text-[var(--od-muted)]" />
+                <span className="font-medium">{f.nome}</span>
+              </button>
+            ))}
+
+            {loading && (
+              <div className="flex items-center justify-center gap-2 od-muted pt-2">
+                <Loader2 size={16} className="od-spin" /> Carregando...
+              </div>
+            )}
           </div>
-          <div>
-            <label className="text-sm font-medium" htmlFor="password">Senha</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-          >
-            {loading ? "Entrando..." : "Entrar"}
-          </button>
-        </form>
+        )}
       </div>
     </div>
   );
