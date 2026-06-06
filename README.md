@@ -15,11 +15,13 @@
 
 ---
 
-## 🎬 Pitch
+## 🎬 Pitch & Demo
 
-> **Assista ao nosso pitch:** <!-- COLE O LINK DO VÍDEO AQUI -->
->
-> 🔗 **[ Link do vídeo do pitch ]( https://youtube.com/shorts/pXcXh9sEGbU )**
+- 🎥 **Vídeo do pitch:** **[assistir](https://youtube.com/shorts/pXcXh9sEGbU)**
+- 📊 **Apresentação:** **[ver slides](https://docs.google.com/presentation/d/109nfhGiJbA4IHQY1wOEdpcRBxKiDheUOkE26RudHEt0/edit?usp=sharing)**
+- 🚀 **App ao vivo:** **[36-na-minha-maquina-funciona.vercel.app](https://36-na-minha-maquina-funciona.vercel.app)**
+
+> Acesso demo: `admin@agroerp.com` / `admin123`
 
 ---
 
