@@ -72,11 +72,26 @@ export async function avancarSimulacao() {
 
   const recs = gerarRecomendacoes(estadoAtivos, fazendas as FazendaEstado[]);
 
+  // snapshot agregado do ciclo (para tendência)
+  const consumoTotal = estadoAtivos.reduce((s, a) => s + a.consumoAtual, 0);
+  const economiaDia = estadoAtivos.reduce((s, a) => s + Math.max(0, a.consumoAtual - a.consumoMedio), 0) * 8 * 6.1;
+  const snapshot = {
+    tick: novoTick,
+    totalAtivos: estadoAtivos.length,
+    emFila: estadoAtivos.filter((a) => a.status === "NA_FILA").length,
+    emOperacao: estadoAtivos.filter((a) => a.status === "EM_OPERACAO" || a.status === "EM_TRANSITO").length,
+    alertas: recs.length,
+    manutencoes: recs.filter((r) => r.tipo === "MANUTENCAO").length,
+    consumoTotal: Number(consumoTotal.toFixed(1)),
+    economiaDia: Number(economiaDia.toFixed(0)),
+  };
+
   // todas as escritas independentes em paralelo
   await Promise.all([
     ...updates,
     db.posicaoGPS.createMany({ data: novasPosicoes }),
     db.recomendacao.deleteMany(),
+    db.snapshotOperacional.create({ data: snapshot }),
   ]);
   if (recs.length > 0) {
     await db.recomendacao.createMany({

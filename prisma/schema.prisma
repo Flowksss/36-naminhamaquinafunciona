@@ -237,3 +237,19 @@ model SimState {
   tick      Int      @default(0)
   updatedAt DateTime @updatedAt
 }
+
+// Snapshot agregado por ciclo — para gráficos de tendência ao longo dos ticks.
+model SnapshotOperacional {
+  id           String   @id @default(cuid())
+  tick         Int
+  criadoEm     DateTime @default(now())
+  totalAtivos  Int      @default(0)
+  emFila       Int      @default(0)
+  emOperacao   Int      @default(0)
+  alertas      Int      @default(0)
+  manutencoes  Int      @default(0)
+  consumoTotal Float    @default(0)
+  economiaDia  Float    @default(0)
+
+  @@index([tick])
+}

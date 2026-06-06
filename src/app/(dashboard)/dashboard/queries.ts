@@ -52,6 +52,25 @@ const STATUS_LABEL: Record<string, string> = {
 
 export type StatusDist = { status: string; label: string; total: number };
 
+export type SnapshotTrend = {
+  tick: number;
+  alertas: number;
+  manutencoes: number;
+  emFila: number;
+  economiaDia: number;
+  consumoTotal: number;
+};
+
+/** Tendência ao longo dos últimos N ciclos (gráfico de linha). */
+export async function getSnapshots(limit = 15): Promise<SnapshotTrend[]> {
+  const snaps = await db.snapshotOperacional.findMany({
+    orderBy: { tick: "desc" },
+    take: limit,
+    select: { tick: true, alertas: true, manutencoes: true, emFila: true, economiaDia: true, consumoTotal: true },
+  });
+  return snaps.reverse();
+}
+
 /** Distribuição de ativos por status (para o gráfico). */
 export async function getAtivosPorStatus(): Promise<StatusDist[]> {
   const ativos = await ativosNoContexto();

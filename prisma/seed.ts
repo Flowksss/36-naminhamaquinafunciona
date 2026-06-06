@@ -11,6 +11,7 @@ function monthsAgo(n: number, day = 15) {
 async function main() {
   // --- limpa dados de demo (mantém usuários) ---
   await db.recomendacao.deleteMany();
+  await db.snapshotOperacional.deleteMany();
   await db.ativo.deleteMany();
   await db.simState.deleteMany();
   await db.transacao.deleteMany();
@@ -125,6 +126,24 @@ async function main() {
   }
   await db.ativo.createMany({ data: ativos });
   await db.simState.create({ data: { tick: 0 } });
+
+  // snapshots prévios (10 ciclos) para o gráfico de tendência não nascer vazio
+  const snaps = [];
+  for (let t = 1; t <= 10; t++) {
+    const total = 10;
+    const emFila = 2 + Math.round(Math.random() * 5);
+    snaps.push({
+      tick: t,
+      totalAtivos: total,
+      emFila,
+      emOperacao: total - emFila - Math.round(Math.random() * 2),
+      alertas: 2 + Math.round(Math.random() * 5),
+      manutencoes: Math.round(Math.random() * 3),
+      consumoTotal: Number((110 + Math.random() * 40).toFixed(1)),
+      economiaDia: Math.round(800 + Math.random() * 1200),
+    });
+  }
+  await db.snapshotOperacional.createMany({ data: snaps });
 
   const counts = {
     fazendas: await db.fazenda.count(),
