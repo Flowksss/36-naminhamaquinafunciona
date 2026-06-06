@@ -44,9 +44,14 @@ export async function avancarSimulacao() {
     const lat = Number(((a.lat ?? -13) + rand(-passo, passo)).toFixed(5));
     const lng = Number(((a.lng ?? -56) + rand(-passo, passo)).toFixed(5));
 
+    // horas de manutenção: acumula operando, reseta se manutenção feita
+    let horas = a.horasDesdeManutencao + (movel ? rand(8, 20) : 0);
+    if (horas > 360 && Math.random() < 0.5) horas = 0; // manutenção realizada
+    horas = Math.round(horas);
+
     await db.ativo.update({
       where: { id: a.id },
-      data: { consumoAtual, nivelCombustivel: nivel, status, lat, lng },
+      data: { consumoAtual, nivelCombustivel: nivel, status, lat, lng, horasDesdeManutencao: horas },
     });
     novasPosicoes.push({ ativoId: a.id, lat, lng, tick: novoTick });
   }
@@ -67,6 +72,7 @@ export async function avancarSimulacao() {
     consumoMedio: a.consumoMedio,
     consumoAtual: a.consumoAtual,
     nivelCombustivel: a.nivelCombustivel,
+    horasDesdeManutencao: a.horasDesdeManutencao,
   }));
   const estadoFazendas: FazendaEstado[] = fazendas;
 

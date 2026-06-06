@@ -120,6 +120,7 @@ async function main() {
       consumoAtual: consumoMedio,
       capacidadeTanque: 400,
       nivelCombustivel: 40 + Math.round(Math.random() * 55),
+      horasDesdeManutencao: Math.round(Math.random() * 400), // alguns acima de 250 = manutenção
     });
   }
   await db.ativo.createMany({ data: ativos });

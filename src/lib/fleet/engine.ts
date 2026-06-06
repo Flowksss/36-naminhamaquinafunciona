@@ -10,12 +10,13 @@ export type AtivoEstado = {
   consumoMedio: number;
   consumoAtual: number;
   nivelCombustivel: number | null;
+  horasDesdeManutencao: number;
 };
 
 export type FazendaEstado = { id: string; nome: string };
 
 export type RecomendacaoGerada = {
-  tipo: "REDESPACHO" | "FILA_ALTA" | "ALERTA_CONSUMO" | "ABASTECIMENTO";
+  tipo: "REDESPACHO" | "FILA_ALTA" | "ALERTA_CONSUMO" | "ABASTECIMENTO" | "MANUTENCAO";
   severidade: "BAIXA" | "MEDIA" | "ALTA";
   mensagem: string;
   ativoId?: string;
@@ -27,6 +28,7 @@ export type RecomendacaoGerada = {
 export const LIMITE_FILA = 4; // fila a partir daqui = alta
 export const TOL_CONSUMO = 0.2; // 20% acima da média = alerta
 export const LIMITE_COMBUSTIVEL = 15; // % abaixo daqui = abastecer
+export const LIMITE_MANUTENCAO = 250; // horas de operação antes da manutenção preventiva
 
 export function gerarRecomendacoes(
   ativos: AtivoEstado[],
@@ -103,6 +105,21 @@ export function gerarRecomendacoes(
         tipo: "ABASTECIMENTO",
         severidade: a.nivelCombustivel < 7 ? "ALTA" : "MEDIA",
         mensagem: `${a.identificador} com ${a.nivelCombustivel.toFixed(0)}% de combustível. Abastecer antes de parar a operação.`,
+        ativoId: a.id,
+        fazendaOrigemId: a.fazendaId ?? undefined,
+      });
+    }
+  }
+
+  // REGRA 4 — manutenção preventiva
+  for (const a of ativos) {
+    if (a.horasDesdeManutencao >= LIMITE_MANUTENCAO) {
+      const excesso = a.horasDesdeManutencao - LIMITE_MANUTENCAO;
+      const sev = excesso >= 100 ? "ALTA" : excesso >= 40 ? "MEDIA" : "BAIXA";
+      recs.push({
+        tipo: "MANUTENCAO",
+        severidade: sev,
+        mensagem: `${a.identificador} com ${Math.round(a.horasDesdeManutencao)}h desde a última manutenção (limite ${LIMITE_MANUTENCAO}h). Agendar preventiva — reativa custa até 3x mais.`,
         ativoId: a.id,
         fazendaOrigemId: a.fazendaId ?? undefined,
       });

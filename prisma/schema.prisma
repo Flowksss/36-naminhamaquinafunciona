@@ -164,6 +164,7 @@ model Ativo {
   consumoAtual   Float        @default(0) // L/h corrente (do feed simulado)
   capacidadeTanque Float?
   nivelCombustivel Float?      // % 0-100
+  horasDesdeManutencao Float   @default(0) // horas de operação desde a última manutenção
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   posicoes       PosicaoGPS[]
@@ -216,6 +217,7 @@ enum TipoRecomendacao {
   FILA_ALTA
   ALERTA_CONSUMO
   ABASTECIMENTO
+  MANUTENCAO
 }
 
 enum Severidade {

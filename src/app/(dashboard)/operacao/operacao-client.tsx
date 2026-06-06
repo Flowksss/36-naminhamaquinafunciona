@@ -6,15 +6,15 @@ import { avancarSimulacao } from "./actions";
 import type { EstadoFrota } from "./queries";
 import {
   Radar, Play, Loader2,
-  AlertTriangle, Fuel, ArrowRightLeft, Users, type LucideIcon,
+  AlertTriangle, Fuel, ArrowRightLeft, Users, Wrench, type LucideIcon,
 } from "lucide-react";
 
 const ordemSev = { ALTA: 0, MEDIA: 1, BAIXA: 2 } as const;
 const tipoIcon: Record<string, LucideIcon> = {
-  REDESPACHO: ArrowRightLeft, FILA_ALTA: Users, ALERTA_CONSUMO: AlertTriangle, ABASTECIMENTO: Fuel,
+  REDESPACHO: ArrowRightLeft, FILA_ALTA: Users, ALERTA_CONSUMO: AlertTriangle, ABASTECIMENTO: Fuel, MANUTENCAO: Wrench,
 };
 const tipoLabel: Record<string, string> = {
-  REDESPACHO: "Redespacho", FILA_ALTA: "Fila Alta", ALERTA_CONSUMO: "Consumo", ABASTECIMENTO: "Combustível",
+  REDESPACHO: "Redespacho", FILA_ALTA: "Fila Alta", ALERTA_CONSUMO: "Consumo", ABASTECIMENTO: "Combustível", MANUTENCAO: "Manutenção",
 };
 const statusLabel: Record<string, string> = {
   EM_OPERACAO: "Em operação", NA_FILA: "Na fila", EM_TRANSITO: "Em trânsito", OCIOSO: "Ocioso", MANUTENCAO: "Manutenção",
