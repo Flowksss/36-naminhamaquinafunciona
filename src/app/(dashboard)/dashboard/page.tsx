@@ -1,29 +1,8 @@
-import { db } from "@/lib/db";
 import { formatCurrency } from "@/lib/utils";
-
-async function getStats() {
-  const [fazendas, safras, insumos, transacoes] = await Promise.all([
-    db.fazenda.count(),
-    db.safra.count({ where: { status: "EM_ANDAMENTO" } }),
-    db.insumo.findMany({ where: { quantidadeEstoque: { lte: db.insumo.fields.estoqueMinimo } } }).catch(() => []),
-    db.transacao.findMany({
-      where: { data: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) } },
-    }).catch(() => []),
-  ]);
-
-  const receitaMes = transacoes
-    .filter((t) => t.tipo === "RECEITA")
-    .reduce((acc, t) => acc + t.valor, 0);
-
-  const despesaMes = transacoes
-    .filter((t) => t.tipo === "DESPESA")
-    .reduce((acc, t) => acc + t.valor, 0);
-
-  return { fazendas, safras, insumos: insumos.length, receitaMes, despesaMes };
-}
+import { getDashboardStats } from "./queries";
 
 export default async function DashboardPage() {
-  const stats = await getStats();
+  const stats = await getDashboardStats();
 
   const cards = [
     { title: "Fazendas Cadastradas", value: stats.fazendas, unit: "fazendas" },

@@ -8,6 +8,54 @@ Hackathon · janela de 8h · agentes: **Claude** (Miguel) · **Gemini** (Miguel)
 3. Commits pequenos e frequentes. Push assim que o módulo compila.
 4. Branch por módulo → push → merge no `main` pelo Miguel.
 
+## Divisão por CAMADA (atual)
+| Camada | Dono | Arquivos (NÃO cruzar) |
+|--------|------|------------------------|
+| **Backend** | Claude | `prisma/schema.prisma`, `src/lib/*`, `*/queries.ts`, `*/actions.ts`, `src/app/api/*`, `middleware.ts` |
+| **UI/UX** | Gemini | `*/page.tsx`, `*/*-form.tsx`, `src/components/*`, `globals.css`, `*/layout.tsx`, Tailwind |
+
+**Contrato de interface por módulo:**
+- Claude expõe leitura em `queries.ts` e escrita em `actions.ts`
+- Gemini só importa dessas funções e renderiza. Nunca chama `db` direto no `page.tsx`.
+- Mudou assinatura de uma query/action? Avisa no commit.
+
+### CONTRATO CONGELADO (não mudar sem avisar todo o time)
+Tipo compartilhado em `src/lib/types.ts`:
+```ts
+type FormState = { ok: boolean; errors?: Record<string,string>; message?: string };
+const initialFormState: FormState = { ok: false };
+```
+
+**Toda Server Action tem esta assinatura:**
+```ts
+async function criarX(prevState: FormState, formData: FormData): Promise<FormState>
+```
+
+**Como a UI (Gemini) consome — padrão fixo:**
+```tsx
+"use client";
+import { useActionState } from "react";
+import { initialFormState } from "@/lib/types";
+import { criarFazenda } from "./actions";
+
+const [state, formAction] = useActionState(criarFazenda, initialFormState);
+// <form action={formAction}>
+// erro por campo: state.errors?.nome
+// sucesso: state.ok === true
+```
+
+**Regras do contrato:**
+- `revalidatePath()` mora na ACTION (Claude), nunca no form.
+- Action valida e retorna `{ ok:false, errors }` — NUNCA dá throw pra erro de validação.
+- Input HTML usa `name=` igual à chave de `errors`. Ex: `<input name="nome">` ↔ `errors.nome`.
+- Sucesso de criação: action faz `redirect()` OU retorna `{ ok:true }`. Padrão: lista usa redirect, edição inline retorna `ok:true`.
+
+### Ordem de execução (validar antes de fanout)
+1. ✅ Contrato congelado (`types.ts`)
+2. 🔨 Claude: Fazendas `queries.ts` + `actions.ts` (slice de referência)
+3. ⏭️ Gemini: Fazendas form contra o contrato → testar create/list/delete no browser
+4. ⏭️ SÓ DEPOIS de provar: replicar para safras, insumos, financeiro, fornecedores, clientes
+
 ## Divisão de módulos
 Marque `[x]` ao concluir e ponha seu nome.
 

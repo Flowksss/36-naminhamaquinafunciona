@@ -1,10 +1,7 @@
-import { db } from "@/lib/db";
+import { getFazendas } from "./queries";
 
 export default async function FazendasPage() {
-  const fazendas = await db.fazenda.findMany({
-    include: { _count: { select: { safras: true } } },
-    orderBy: { createdAt: "desc" },
-  });
+  const fazendas = await getFazendas();
 
   return (
     <div>
