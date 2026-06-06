@@ -62,11 +62,11 @@ const BLOCOS: BlocoDef[] = [
     ),
   },
   {
-    id: "status", titulo: "Distribuição da Frota", w: 8, h: 4,
+    id: "status", titulo: "Distribuição da Frota", w: 8, h: 6,
     render: (d) => <StatusChart data={d.statusDist} />,
   },
   {
-    id: "trend", titulo: "Alertas e Economia por Ciclo", w: 12, h: 4,
+    id: "trend", titulo: "Alertas e Economia por Ciclo", w: 12, h: 6,
     render: (d) => <TrendChart data={d.snapshots} />,
   },
   {
@@ -202,6 +202,7 @@ export function PainelClient({ data }: { data: PainelData }) {
           rowHeight={70}
           margin={[16, 16]}
           draggableHandle=".pnl-drag"
+          draggableCancel=".pnl-no-drag"
           onLayoutChange={(l: Layout[]) => persist(ativos, l)}
         >
           {ativos.map((id) => {
@@ -211,7 +212,11 @@ export function PainelClient({ data }: { data: PainelData }) {
               <div key={id} className="od-panel flex flex-col overflow-hidden">
                 <div className="od-panelhead pnl-drag" style={{ cursor: "move" }}>
                   <h2 className="flex items-center gap-2"><GripVertical size={14} className="od-muted" /> {def.titulo}</h2>
-                  <button onClick={() => remover(id)} className="od-muted hover:text-[var(--od-red)] transition-colors">
+                  <button
+                    onClick={() => remover(id)}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    className="pnl-no-drag od-muted hover:text-[var(--od-red)] transition-colors"
+                  >
                     <X size={16} />
                   </button>
                 </div>
