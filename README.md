@@ -22,7 +22,8 @@
 - 📄 **Pitch (PDF):** **[abrir no repositório](docs/CCT-Sincro-pitch.pdf)**
 - 🚀 **App ao vivo:** **[36-na-minha-maquina-funciona.vercel.app](https://36-na-minha-maquina-funciona.vercel.app)**
 
-> Acesso demo: `admin@agroerp.com` / `admin123`
+> Acesso demo (Agro Norte): `admin@cctsincro.com` / `admin123`
+> Outra unidade (Vale Verde, para ver o isolamento multiunidade): `gestor@valeverde.com` / `vale123`
 
 ---
 
@@ -92,6 +93,27 @@ O **motor de regras** (`src/lib/fleet/engine.ts`) é uma função pura que avali
 | Auth | NextAuth.js (Credentials) |
 | Gráficos | Recharts |
 | Deploy | Vercel |
+
+---
+
+## ⚙️ Configuração / Deploy
+
+Variáveis de ambiente obrigatórias (`.env` local e **Environment Variables** na Vercel):
+
+| Variável | Descrição |
+|----------|-----------|
+| `DATABASE_URL` | String de conexão Postgres (Neon). |
+| `NEXTAUTH_SECRET` | **Obrigatória em produção.** Assina o JWT de sessão; sem ela o NextAuth quebra no deploy. Gere com `openssl rand -base64 32`. |
+| `NEXTAUTH_URL` | URL pública do app (ex.: `https://...vercel.app`). |
+
+```bash
+npm install
+npm run db:push     # aplica o schema (cria Organizacao, isolamento por tenant)
+npm run db:seed     # popula 2 organizações de demo (Agro Norte + Vale Verde)
+npm run dev
+```
+
+> **Multiunidade (multi-tenant):** cada usuário pertence a uma `Organizacao`. Todo o dado de frota é isolado por `organizacaoId` derivado da sessão — nunca de cookie ou input do cliente. O seletor de fazenda só alterna entre unidades da própria organização.
 
 ---
 

@@ -1,4 +1,4 @@
-# AgroERP — Coordenação Multi-Agente
+# CCT SINCRO — Coordenação Multi-Agente
 
 Hackathon · janela de 8h · agentes: **Claude** (Miguel) · **Gemini** (Miguel) · **Codex** (2 colegas)
 
@@ -101,4 +101,4 @@ npm install
 npm run db:generate
 npm run dev
 ```
-Login: `admin@agroerp.com` / `admin123`
+Login: `admin@CCT SINCRO.com` / `admin123`
