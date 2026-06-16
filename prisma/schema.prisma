@@ -7,14 +7,37 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Tenant raiz do SaaS. Uma organização (cliente) possui N fazendas/unidades
+// e N usuários. TODO isolamento multiunidade parte daqui.
+model Organizacao {
+  id        String      @id @default(cuid())
+  nome      String
+  plano     PlanoTier   @default(START)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  usuarios  User[]
+  fazendas  Fazenda[]
+  ativos    Ativo[]
+}
+
+enum PlanoTier {
+  START
+  GROWTH
+  ENTERPRISE
+}
+
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(OPERADOR)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String      @id @default(cuid())
+  name           String
+  email          String      @unique
+  password       String
+  role           Role        @default(OPERADOR)
+  organizacaoId  String
+  organizacao    Organizacao @relation(fields: [organizacaoId], references: [id])
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([organizacaoId])
 }
 
 enum Role {
@@ -24,15 +47,19 @@ enum Role {
 }
 
 model Fazenda {
-  id          String   @id @default(cuid())
-  nome        String
-  area        Float
-  localizacao String
-  tipoSolo    String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  safras      Safra[]
-  ativos      Ativo[]
+  id             String      @id @default(cuid())
+  nome           String
+  area           Float
+  localizacao    String
+  tipoSolo       String?
+  organizacaoId  String
+  organizacao    Organizacao @relation(fields: [organizacaoId], references: [id])
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  safras         Safra[]
+  ativos         Ativo[]
+
+  @@index([organizacaoId])
 }
 
 model Safra {
@@ -156,8 +183,10 @@ model Ativo {
   identificador  String       @unique // placa ou código (ex: "CAM-32")
   tipo           TipoAtivo    @default(CAMINHAO)
   status         StatusAtivo  @default(OCIOSO)
-  fazendaId      String?
-  fazenda        Fazenda?     @relation(fields: [fazendaId], references: [id])
+  organizacaoId  String
+  organizacao    Organizacao  @relation(fields: [organizacaoId], references: [id])
+  fazendaId      String
+  fazenda        Fazenda      @relation(fields: [fazendaId], references: [id])
   lat            Float?
   lng            Float?
   consumoMedio   Float        @default(0) // baseline L/h estimado
@@ -172,6 +201,9 @@ model Ativo {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   posicoes       PosicaoGPS[]
+
+  @@index([organizacaoId])
+  @@index([fazendaId])
 }
 
 // Trilha de posições GPS (histórico) — para mapa + rotas.
@@ -207,6 +239,7 @@ enum StatusAtivo {
 
 model Recomendacao {
   id              String              @id @default(cuid())
+  organizacaoId   String
   tick            Int                 @default(0) // qual ciclo da simulação gerou
   tipo            TipoRecomendacao
   severidade      Severidade          @default(MEDIA)
@@ -216,6 +249,8 @@ model Recomendacao {
   fazendaDestinoId String?
   status          StatusRecomendacao  @default(ATIVA)
   createdAt       DateTime            @default(now())
+
+  @@index([organizacaoId, status])
 }
 
 enum TipoRecomendacao {
@@ -237,25 +272,27 @@ enum StatusRecomendacao {
   RESOLVIDA
 }
 
-// Estado global da simulação (1 linha). Controla o "tick".
+// Estado da simulação por organização (1 linha por org). Controla o "tick".
 model SimState {
-  id        String   @id @default(cuid())
-  tick      Int      @default(0)
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(cuid())
+  organizacaoId String   @unique
+  tick          Int      @default(0)
+  updatedAt     DateTime @updatedAt
 }
 
 // Snapshot agregado por ciclo — para gráficos de tendência ao longo dos ticks.
 model SnapshotOperacional {
-  id           String   @id @default(cuid())
-  tick         Int
-  criadoEm     DateTime @default(now())
-  totalAtivos  Int      @default(0)
-  emFila       Int      @default(0)
-  emOperacao   Int      @default(0)
-  alertas      Int      @default(0)
-  manutencoes  Int      @default(0)
-  consumoTotal Float    @default(0)
-  economiaDia  Float    @default(0)
+  id            String   @id @default(cuid())
+  organizacaoId String
+  tick          Int
+  criadoEm      DateTime @default(now())
+  totalAtivos   Int      @default(0)
+  emFila        Int      @default(0)
+  emOperacao    Int      @default(0)
+  alertas       Int      @default(0)
+  manutencoes   Int      @default(0)
+  consumoTotal  Float    @default(0)
+  desperdicioDia Float   @default(0) // R$/dia de diesel desperdiçado (menor = melhor)
 
-  @@index([tick])
+  @@index([organizacaoId, tick])
 }

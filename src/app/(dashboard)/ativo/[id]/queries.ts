@@ -1,8 +1,10 @@
 import { db } from "@/lib/db";
+import { requireOrgId } from "@/lib/session";
 
 export async function getAtivoProfile(id: string) {
-  const ativo = await db.ativo.findUnique({
-    where: { id },
+  const orgId = await requireOrgId();
+  const ativo = await db.ativo.findFirst({
+    where: { id, organizacaoId: orgId },
     include: { fazenda: { select: { nome: true } } },
   });
   if (!ativo) return null;
@@ -15,7 +17,7 @@ export async function getAtivoProfile(id: string) {
       select: { tick: true, consumo: true, nivel: true, lat: true, lng: true },
     }),
     db.recomendacao.findMany({ where: { ativoId: id, status: "ATIVA" } }),
-    db.ativo.findMany({ select: { consumoAtual: true } }),
+    db.ativo.findMany({ where: { organizacaoId: orgId }, select: { consumoAtual: true } }),
   ]);
 
   const mediaFrota = frota.length ? frota.reduce((s, a) => s + a.consumoAtual, 0) / frota.length : 0;

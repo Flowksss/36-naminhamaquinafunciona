@@ -1,18 +1,26 @@
 import { db } from "@/lib/db";
 import { getFazendaContext } from "@/lib/fazenda-context";
+import { requireOrgId } from "@/lib/session";
 
 const PRECO_DIESEL = 6.1; // R$/L (referência)
 const HORAS_OPERACAO_DIA = 8;
 
 async function ativosNoContexto() {
+  const orgId = await requireOrgId();
   const ctx = getFazendaContext();
-  return db.ativo.findMany({ where: ctx ? { fazendaId: ctx } : undefined });
+  return db.ativo.findMany({ where: { organizacaoId: orgId, ...(ctx ? { fazendaId: ctx } : {}) } });
 }
 
 async function recsNoContexto() {
+  const orgId = await requireOrgId();
   const ctx = getFazendaContext();
-  const recs = await db.recomendacao.findMany({ where: { status: "ATIVA" } });
-  return ctx ? recs.filter((r) => r.fazendaOrigemId === ctx || r.fazendaDestinoId === ctx) : recs;
+  return db.recomendacao.findMany({
+    where: {
+      organizacaoId: orgId,
+      status: "ATIVA",
+      ...(ctx ? { OR: [{ fazendaOrigemId: ctx }, { fazendaDestinoId: ctx }] } : {}),
+    },
+  });
 }
 
 /** KPIs operacionais do CCT-Sincro (filtra pela fazenda ativa). */
@@ -57,16 +65,18 @@ export type SnapshotTrend = {
   alertas: number;
   manutencoes: number;
   emFila: number;
-  economiaDia: number;
+  desperdicioDia: number;
   consumoTotal: number;
 };
 
 /** Tendência ao longo dos últimos N ciclos (gráfico de linha). */
 export async function getSnapshots(limit = 15): Promise<SnapshotTrend[]> {
+  const orgId = await requireOrgId();
   const snaps = await db.snapshotOperacional.findMany({
+    where: { organizacaoId: orgId },
     orderBy: { tick: "desc" },
     take: limit,
-    select: { tick: true, alertas: true, manutencoes: true, emFila: true, economiaDia: true, consumoTotal: true },
+    select: { tick: true, alertas: true, manutencoes: true, emFila: true, desperdicioDia: true, consumoTotal: true },
   });
   return snaps.reverse();
 }
