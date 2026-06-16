@@ -3,6 +3,7 @@
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Link from "next/link";
 import { ShaderBackground } from "@/components/shader-background";
 import { getContextoFazenda, setFazendaContext } from "@/lib/fazenda-actions";
 import { Loader2, ArrowRight, MapPin, Layers } from "lucide-react";
@@ -75,6 +76,11 @@ export default function LoginPage() {
               {loading ? <Loader2 size={16} className="od-spin" /> : <ArrowRight size={16} />}
               {loading ? "Entrando..." : "Entrar"}
             </button>
+
+            <div className="flex items-center justify-between text-sm pt-1">
+              <Link href="/forgot-password" className="od-muted hover:text-[var(--od-accent)]">Esqueci a senha</Link>
+              <Link href="/register" className="text-[var(--od-accent)] hover:underline">Criar conta</Link>
+            </div>
           </form>
         ) : (
           <div className="space-y-3">
