@@ -111,9 +111,9 @@ export function gerarRecomendacoes(
     }
   }
 
-  // REGRA 4 — manutenção preventiva
+  // REGRA 4 — manutenção preventiva (ignora quem já está em manutenção)
   for (const a of ativos) {
-    if (a.horasDesdeManutencao >= LIMITE_MANUTENCAO) {
+    if (a.status !== "MANUTENCAO" && a.horasDesdeManutencao >= LIMITE_MANUTENCAO) {
       const excesso = a.horasDesdeManutencao - LIMITE_MANUTENCAO;
       const sev = excesso >= 100 ? "ALTA" : excesso >= 40 ? "MEDIA" : "BAIXA";
       recs.push({
