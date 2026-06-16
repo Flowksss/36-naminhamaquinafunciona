@@ -135,6 +135,17 @@ async function main() {
     ],
   });
 
+  // --- talhões / áreas produtivas (dentro das unidades) ---
+  await db.talhao.createMany({
+    data: [
+      { organizacaoId: agroNorte.id, fazendaId: saoJoao.id, nome: "Talhão 1", cultura: "Soja", areaHa: 320, lat: -12.4, lng: -55.6 },
+      { organizacaoId: agroNorte.id, fazendaId: saoJoao.id, nome: "Talhão 2", cultura: "Milho", areaHa: 280, lat: -12.5, lng: -55.7 },
+      { organizacaoId: agroNorte.id, fazendaId: boaVista.id, nome: "Talhão A", cultura: "Soja", areaHa: 410, lat: -13.1, lng: -55.9 },
+      { organizacaoId: valeVerde.id, fazendaId: santaFe.id, nome: "Quadra Norte", cultura: "Trigo", areaHa: 150, lat: -13.6, lng: -56.2 },
+      { organizacaoId: valeVerde.id, fazendaId: primavera.id, nome: "Gleba 3", cultura: "Soja", areaHa: 220, lat: -13.8, lng: -56.4 },
+    ],
+  });
+
   // ============================================================
   // FROTA por organização (isolada)
   // ============================================================

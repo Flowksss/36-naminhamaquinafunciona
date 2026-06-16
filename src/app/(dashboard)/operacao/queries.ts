@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { getFazendaContext } from "@/lib/fazenda-context";
 import { requireOrgId } from "@/lib/session";
+import { getRecomendacoesAtuais } from "@/lib/fleet/recommend";
 
 export async function getEstadoFrota() {
   const orgId = await requireOrgId(); // isolamento: tudo restrito à org da sessão
@@ -8,7 +9,7 @@ export async function getEstadoFrota() {
 
   const baseAtivo = { organizacaoId: orgId, ...(ctx ? { fazendaId: ctx } : {}) };
 
-  const [ativos, ativosOrg, fazendas, recomendacoes, sim] = await Promise.all([
+  const [ativos, ativosOrg, fazendas, recsAll] = await Promise.all([
     db.ativo.findMany({
       where: baseAtivo,
       include: { fazenda: { select: { nome: true } } },
@@ -20,16 +21,13 @@ export async function getEstadoFrota() {
       select: { id: true, nome: true },
       orderBy: { nome: "asc" },
     }),
-    db.recomendacao.findMany({
-      where: {
-        organizacaoId: orgId,
-        status: "ATIVA",
-        ...(ctx ? { OR: [{ fazendaOrigemId: ctx }, { fazendaDestinoId: ctx }] } : {}),
-      },
-      orderBy: { createdAt: "desc" },
-    }),
-    db.simState.findFirst({ where: { organizacaoId: orgId } }),
+    getRecomendacoesAtuais(orgId), // motor calculado ao vivo do estado real
   ]);
+
+  // filtra recomendações pela unidade selecionada (quando houver)
+  const recomendacoes = ctx
+    ? recsAll.filter((r) => r.fazendaOrigemId === ctx || r.fazendaDestinoId === ctx)
+    : recsAll;
 
   const unidades = ctx ? fazendas.filter((f) => f.id === ctx) : fazendas;
   const filaPorUnidade = unidades.map((f) => ({
@@ -38,7 +36,7 @@ export async function getEstadoFrota() {
     ativos: ativosOrg.filter((a) => a.fazendaId === f.id).length,
   }));
 
-  return { ativos, fazendas, filaPorUnidade, recomendacoes, tick: sim?.tick ?? 0 };
+  return { ativos, fazendas, filaPorUnidade, recomendacoes };
 }
 
 export type EstadoFrota = Awaited<ReturnType<typeof getEstadoFrota>>;

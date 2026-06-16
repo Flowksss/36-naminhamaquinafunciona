@@ -1,6 +1,5 @@
-import { getDashboardStats, getEconomia, getAtivosPorStatus, getSnapshots } from "./queries";
+import { getDashboardStats, getEconomia, getAtivosPorStatus } from "./queries";
 import { StatusChart } from "./status-chart";
-import { TrendChart } from "./trend-chart";
 
 export const dynamic = "force-dynamic";
 
@@ -8,11 +7,10 @@ const brl = (v: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(v);
 
 export default async function DashboardPage() {
-  const [stats, economia, statusDist, snapshots] = await Promise.all([
+  const [stats, economia, statusDist] = await Promise.all([
     getDashboardStats(),
     getEconomia(),
     getAtivosPorStatus(),
-    getSnapshots(),
   ]);
 
   const cards = [
@@ -58,13 +56,6 @@ export default async function DashboardPage() {
           <div className="p-6">
             <StatusChart data={statusDist} />
           </div>
-        </div>
-      </div>
-
-      <div className="od-panel mt-6">
-        <div className="od-panelhead"><h2>Alertas e Economia por Ciclo</h2></div>
-        <div className="p-6">
-          <TrendChart data={snapshots} />
         </div>
       </div>
     </>

@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { requireOrgId } from "@/lib/session";
+import { getRecomendacoesAtuais } from "@/lib/fleet/recommend";
 
 export async function getAtivoProfile(id: string) {
   const orgId = await requireOrgId();
@@ -9,16 +10,17 @@ export async function getAtivoProfile(id: string) {
   });
   if (!ativo) return null;
 
-  const [historico, recomendacoes, frota] = await Promise.all([
+  const [historico, recsOrg, frota] = await Promise.all([
     db.posicaoGPS.findMany({
       where: { ativoId: id },
       orderBy: { tick: "desc" },
       take: 15,
       select: { tick: true, consumo: true, nivel: true, lat: true, lng: true },
     }),
-    db.recomendacao.findMany({ where: { ativoId: id, status: "ATIVA" } }),
+    getRecomendacoesAtuais(orgId),
     db.ativo.findMany({ where: { organizacaoId: orgId }, select: { consumoAtual: true } }),
   ]);
+  const recomendacoes = recsOrg.filter((r) => r.ativoId === id);
 
   const mediaFrota = frota.length ? frota.reduce((s, a) => s + a.consumoAtual, 0) / frota.length : 0;
   const diffPct = mediaFrota > 0 ? Math.round(((ativo.consumoAtual - mediaFrota) / mediaFrota) * 100) : 0;

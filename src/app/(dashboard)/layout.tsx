@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { useState, useEffect, useRef } from "react";
 import {
   LayoutDashboard,
@@ -11,6 +12,9 @@ import {
   Layers,
   LayoutGrid,
   Building2,
+  Truck,
+  Sprout,
+  LogOut,
   Check,
 } from "lucide-react";
 import { ShaderBackground } from "@/components/shader-background";
@@ -20,8 +24,10 @@ const navItems = [
   { href: "/operacao", label: "Centro de Operações", icon: Radar },
   { href: "/mapa", label: "Mapa GPS", icon: MapIcon },
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/painel", label: "Painel Personalizável", icon: LayoutGrid },
+  { href: "/frota", label: "Máquinas", icon: Truck },
+  { href: "/areas", label: "Áreas / Talhões", icon: Sprout },
   { href: "/fazendas", label: "Unidades", icon: MapPin },
+  { href: "/painel", label: "Painel Personalizável", icon: LayoutGrid },
   { href: "/planos", label: "Planos", icon: Layers },
 ];
 
@@ -113,6 +119,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               );
             })}
           </nav>
+
+          <button
+            onClick={() => signOut({ callbackUrl: "/login" })}
+            className="od-navitem mt-auto text-[var(--od-muted)] hover:text-[var(--od-red)]"
+            data-label="Sair"
+          >
+            <LogOut size={22} />
+          </button>
         </aside>
 
         {/* MAIN */}

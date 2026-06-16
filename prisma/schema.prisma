@@ -72,8 +72,29 @@ model Fazenda {
   updatedAt      DateTime    @updatedAt
   safras         Safra[]
   ativos         Ativo[]
+  talhoes        Talhao[]
 
   @@index([organizacaoId])
+}
+
+// Talhão / área produtiva dentro de uma unidade (fazenda). Onde as máquinas
+// operam. organizacaoId é escalar (mesmo padrão de Recomendacao/SimState) —
+// isolamento garantido pela action, que valida a fazenda escolhida.
+model Talhao {
+  id            String   @id @default(cuid())
+  organizacaoId String
+  fazendaId     String
+  fazenda       Fazenda  @relation(fields: [fazendaId], references: [id])
+  nome          String
+  cultura       String?
+  areaHa        Float    @default(0)
+  lat           Float?
+  lng           Float?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([organizacaoId])
+  @@index([fazendaId])
 }
 
 model Safra {
@@ -194,7 +215,7 @@ enum TipoTransacao {
 
 model Ativo {
   id             String       @id @default(cuid())
-  identificador  String       @unique // placa ou código (ex: "CAM-32")
+  identificador  String       // placa ou código (ex: "CAM-32"), único por organização
   tipo           TipoAtivo    @default(CAMINHAO)
   status         StatusAtivo  @default(OCIOSO)
   organizacaoId  String
@@ -216,6 +237,7 @@ model Ativo {
   updatedAt      DateTime     @updatedAt
   posicoes       PosicaoGPS[]
 
+  @@unique([organizacaoId, identificador])
   @@index([organizacaoId])
   @@index([fazendaId])
 }

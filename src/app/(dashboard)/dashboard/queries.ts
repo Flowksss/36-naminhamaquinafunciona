@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { getFazendaContext } from "@/lib/fazenda-context";
 import { requireOrgId } from "@/lib/session";
+import { getRecomendacoesAtuais } from "@/lib/fleet/recommend";
 
 const PRECO_DIESEL = 6.1; // R$/L (referência)
 const HORAS_OPERACAO_DIA = 8;
@@ -14,13 +15,8 @@ async function ativosNoContexto() {
 async function recsNoContexto() {
   const orgId = await requireOrgId();
   const ctx = getFazendaContext();
-  return db.recomendacao.findMany({
-    where: {
-      organizacaoId: orgId,
-      status: "ATIVA",
-      ...(ctx ? { OR: [{ fazendaOrigemId: ctx }, { fazendaDestinoId: ctx }] } : {}),
-    },
-  });
+  const recs = await getRecomendacoesAtuais(orgId); // motor ao vivo (sem simulação)
+  return ctx ? recs.filter((r) => r.fazendaOrigemId === ctx || r.fazendaDestinoId === ctx) : recs;
 }
 
 /** KPIs operacionais do CCT-Sincro (filtra pela fazenda ativa). */
@@ -59,27 +55,6 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export type StatusDist = { status: string; label: string; total: number };
-
-export type SnapshotTrend = {
-  tick: number;
-  alertas: number;
-  manutencoes: number;
-  emFila: number;
-  desperdicioDia: number;
-  consumoTotal: number;
-};
-
-/** Tendência ao longo dos últimos N ciclos (gráfico de linha). */
-export async function getSnapshots(limit = 15): Promise<SnapshotTrend[]> {
-  const orgId = await requireOrgId();
-  const snaps = await db.snapshotOperacional.findMany({
-    where: { organizacaoId: orgId },
-    orderBy: { tick: "desc" },
-    take: limit,
-    select: { tick: true, alertas: true, manutencoes: true, emFila: true, desperdicioDia: true, consumoTotal: true },
-  });
-  return snaps.reverse();
-}
 
 /** Distribuição de ativos por status (para o gráfico). */
 export async function getAtivosPorStatus(): Promise<StatusDist[]> {

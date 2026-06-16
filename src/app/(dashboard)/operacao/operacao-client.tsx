@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { EstadoFrota } from "./queries";
-import { AutoSim } from "@/components/auto-sim";
 import {
   AlertTriangle, Fuel, ArrowRightLeft, Users, Wrench, type LucideIcon,
 } from "lucide-react";
@@ -40,9 +39,7 @@ export function OperacaoClient({ estado }: { estado: EstadoFrota }) {
       <header className="od-topbar">
         <div className="od-title">
 CCT <span>SINCRO</span> · Centro de Operações
-          <span className="od-cycle">Ciclo #{estado.tick}</span>
         </div>
-        <AutoSim />
       </header>
 
       <section className="od-kpis">

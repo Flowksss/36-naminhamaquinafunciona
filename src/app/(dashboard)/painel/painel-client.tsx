@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 import { GripVertical, X, Plus, RotateCcw } from "lucide-react";
 import type { PainelData } from "./queries";
 import { StatusChart } from "../dashboard/status-chart";
-import { TrendChart } from "../dashboard/trend-chart";
 
 // react-grid-layout usa tipos `export =` antigos; o WidthProvider não fica
 // acessível pelo default import em runtime. Resolve via require + fallback.
@@ -66,10 +65,6 @@ const BLOCOS: BlocoDef[] = [
     render: (d) => <StatusChart data={d.statusDist} />,
   },
   {
-    id: "trend", titulo: "Alertas e Economia por Ciclo", w: 12, h: 6,
-    render: (d) => <TrendChart data={d.snapshots} />,
-  },
-  {
     id: "recomendacoes", titulo: "Recomendações", w: 6, h: 5,
     render: (d) => (
       <div className="flex flex-col gap-2 overflow-y-auto h-full">
@@ -114,7 +109,7 @@ const BLOCOS: BlocoDef[] = [
   },
 ];
 
-const DEFAULT_BLOCOS = ["kpis", "status", "trend"];
+const DEFAULT_BLOCOS = ["kpis", "status", "recomendacoes"];
 const LS_BLOCOS = "cct_painel_blocos";
 const LS_LAYOUT = "cct_painel_layout";
 

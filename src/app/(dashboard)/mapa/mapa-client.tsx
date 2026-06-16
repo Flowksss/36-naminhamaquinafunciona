@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import type { MapaFrota, Machine } from "./queries";
-import { avancarSimulacao } from "../operacao/actions";
-import { Play, Loader2, Truck, Fuel, Gauge, MapPin } from "lucide-react";
+import { Truck, Fuel, Gauge, MapPin } from "lucide-react";
 
 const STATUS_COR: Record<string, string> = {
   EM_OPERACAO: "var(--od-accent)",
@@ -19,13 +18,7 @@ const statusLabel: Record<string, string> = {
 const W = 1000, H = 620, PAD = 50;
 
 export function MapaClient({ data }: { data: MapaFrota }) {
-  const [pending, setPending] = useState(false);
   const [selId, setSelId] = useState<string | null>(data.machines[0]?.id ?? null);
-
-  async function handleAvancar() {
-    setPending(true);
-    try { await avancarSimulacao(); } finally { setPending(false); }
-  }
 
   // bounding box de todos os pontos (posições + rotas)
   const pts: { lat: number; lng: number }[] = [];
@@ -59,17 +52,13 @@ export function MapaClient({ data }: { data: MapaFrota }) {
             <span className="text-[10px] text-[var(--od-accent)] font-bold uppercase tracking-wider leading-none mt-[1px]">Ao Vivo</span>
           </div>
         </div>
-        <button className="od-btn" onClick={handleAvancar} disabled={pending}>
-          {pending ? <Loader2 size={16} className="od-spin" /> : <Play size={16} />}
-          {pending ? "Processando" : "Avançar Simulação"}
-        </button>
       </header>
 
       <div className="od-grid">
         {/* MAPA */}
         <div className="od-panel od-col" style={{ padding: 0, overflow: "hidden" }}>
           {data.machines.length === 0 ? (
-            <div className="od-empty">Sem posições GPS. Avance a simulação para gerar trilhas.</div>
+            <div className="od-empty">Sem máquinas posicionadas. Cadastre máquinas com latitude/longitude para vê-las no mapa.</div>
           ) : (
             <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "100%", display: "block" }}>
               {/* fundo sólido */}
