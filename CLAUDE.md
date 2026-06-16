@@ -1,4 +1,4 @@
-# AgroERP — Instruções para Claude Code
+# CCT SINCRO — Instruções para Claude Code
 
 ## Stack
 - Next.js 14 (App Router) + TypeScript

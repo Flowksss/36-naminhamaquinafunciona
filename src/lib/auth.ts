@@ -4,6 +4,7 @@ import { compare } from "bcryptjs";
 import { db } from "./db";
 
 export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
@@ -27,20 +28,30 @@ export const authOptions: NextAuthOptions = {
         const passwordMatch = await compare(credentials.password, user.password);
         if (!passwordMatch) return null;
 
-        return { id: user.id, email: user.email, name: user.name, role: user.role };
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          organizacaoId: user.organizacaoId,
+        };
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = (user as unknown as { role: string }).role;
+        token.id = user.id;
+        token.role = user.role;
+        token.organizacaoId = user.organizacaoId;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as unknown as { role: string }).role = token.role as string;
+        session.user.id = token.id;
+        session.user.role = token.role;
+        session.user.organizacaoId = token.organizacaoId;
       }
       return session;
     },

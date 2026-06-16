@@ -1,4 +1,4 @@
-# AgroERP — Instructions for Codex Agents
+# CCT SINCRO — Instructions for Codex Agents
 
 ## Project
 Agribusiness ERP (hackathon). Next.js 14 App Router + TypeScript + Prisma + PostgreSQL + Tailwind CSS.

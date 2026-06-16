@@ -22,7 +22,7 @@ export function TrendChart({ data }: { data: SnapshotTrend[] }) {
           />
           <Line yAxisId="left" type="monotone" dataKey="alertas" name="Alertas" stroke="var(--od-amber)" strokeWidth={2} dot={false} />
           <Line yAxisId="left" type="monotone" dataKey="emFila" name="Em Fila" stroke="var(--od-red)" strokeWidth={2} dot={false} />
-          <Line yAxisId="right" type="monotone" dataKey="economiaDia" name="Economia/Dia (R$)" stroke="var(--od-accent)" strokeWidth={2} dot={false} />
+          <Line yAxisId="right" type="monotone" dataKey="desperdicioDia" name="Desperdício/Dia (R$) — menor é melhor" stroke="var(--od-accent)" strokeWidth={2} dot={false} />
         </LineChart>
       </ResponsiveContainer>
     </div>

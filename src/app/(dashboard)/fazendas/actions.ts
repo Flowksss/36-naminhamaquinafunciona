@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { FormState } from "@/lib/types";
+import { requireRole } from "@/lib/session";
 
 // --- validação leve (sem dep externa) ---
 function parseFazenda(formData: FormData) {
@@ -26,11 +27,18 @@ function parseFazenda(formData: FormData) {
 }
 
 export async function criarFazenda(_prev: FormState, formData: FormData): Promise<FormState> {
+  let orgId: string;
+  try {
+    ({ orgId } = await requireRole("ADMIN", "GERENTE"));
+  } catch {
+    return { ok: false, message: "Você não tem permissão para criar fazendas." };
+  }
+
   const { errors, data } = parseFazenda(formData);
   if (Object.keys(errors).length > 0) return { ok: false, errors };
 
   try {
-    await db.fazenda.create({ data });
+    await db.fazenda.create({ data: { ...data, organizacaoId: orgId } });
   } catch {
     return { ok: false, message: "Erro ao salvar fazenda. Tente novamente." };
   }
@@ -44,11 +52,20 @@ export async function atualizarFazenda(
   _prev: FormState,
   formData: FormData
 ): Promise<FormState> {
+  let orgId: string;
+  try {
+    ({ orgId } = await requireRole("ADMIN", "GERENTE"));
+  } catch {
+    return { ok: false, message: "Você não tem permissão para editar fazendas." };
+  }
+
   const { errors, data } = parseFazenda(formData);
   if (Object.keys(errors).length > 0) return { ok: false, errors };
 
   try {
-    await db.fazenda.update({ where: { id }, data });
+    // updateMany com filtro de org garante que só atualiza fazenda do próprio tenant
+    const res = await db.fazenda.updateMany({ where: { id, organizacaoId: orgId }, data });
+    if (res.count === 0) return { ok: false, message: "Fazenda não encontrada." };
   } catch {
     return { ok: false, message: "Erro ao atualizar fazenda." };
   }
@@ -58,8 +75,16 @@ export async function atualizarFazenda(
 }
 
 export async function deletarFazenda(id: string): Promise<FormState> {
+  let orgId: string;
   try {
-    await db.fazenda.delete({ where: { id } });
+    ({ orgId } = await requireRole("ADMIN", "GERENTE"));
+  } catch {
+    return { ok: false, message: "Você não tem permissão para excluir fazendas." };
+  }
+
+  try {
+    const res = await db.fazenda.deleteMany({ where: { id, organizacaoId: orgId } });
+    if (res.count === 0) return { ok: false, message: "Fazenda não encontrada." };
   } catch {
     return { ok: false, message: "Erro ao excluir. Verifique se há safras vinculadas." };
   }
