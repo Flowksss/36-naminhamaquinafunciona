@@ -127,11 +127,15 @@ CCT <span>SINCRO</span> · Centro de Operações
                         </Link>
                       </td>
                       <td><span className="od-status">{statusLabel[a.status]}</span></td>
-                      <td className="od-mono od-right">{a.consumoAtual.toFixed(1)}</td>
+                      <td className="od-mono od-right">{a.consumoAtual > 0 ? a.consumoAtual.toFixed(1) : "—"}</td>
                       <td className="od-right">
-                        <span className={(a.nivelCombustivel ?? 0) < 15 ? "od-fuel-low" : "od-muted"}>
-                          {a.nivelCombustivel ?? 0}%
-                        </span>
+                        {a.nivelCombustivel == null ? (
+                          <span className="od-muted">—</span>
+                        ) : (
+                          <span className={a.nivelCombustivel < 15 ? "od-fuel-low" : "od-muted"}>
+                            {a.nivelCombustivel}%
+                          </span>
+                        )}
                       </td>
                     </tr>
                   ))}

@@ -91,6 +91,7 @@ async function main() {
   await db.insumo.deleteMany();
   await db.fornecedor.deleteMany();
   await db.cliente.deleteMany();
+  await db.talhao.deleteMany();
   await db.fazenda.deleteMany();
   await db.user.deleteMany();
   await db.organizacao.deleteMany();

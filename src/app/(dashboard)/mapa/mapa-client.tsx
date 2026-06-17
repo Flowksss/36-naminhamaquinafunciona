@@ -200,9 +200,9 @@ export function MapaClient({ data }: { data: MapaFrota }) {
                   <span className="od-status" style={{ marginLeft: "auto" }}>{statusLabel[sel.status]}</span>
                 </div>
                 <InfoRow icon={<MapPin size={14} />} label="Unidade" value={sel.unidade ?? "—"} />
-                <InfoRow icon={<Gauge size={14} />} label="Consumo" value={`${sel.consumoAtual.toFixed(1)} L/h`} />
-                <InfoRow icon={<Fuel size={14} />} label="Combustível" value={`${sel.nivelCombustivel ?? 0}%`}
-                  danger={(sel.nivelCombustivel ?? 0) < 15} />
+                <InfoRow icon={<Gauge size={14} />} label="Consumo" value={sel.consumoAtual > 0 ? `${sel.consumoAtual.toFixed(1)} L/h` : "sem dados"} />
+                <InfoRow icon={<Fuel size={14} />} label="Combustível" value={sel.nivelCombustivel == null ? "sem dados" : `${sel.nivelCombustivel}%`}
+                  danger={sel.nivelCombustivel != null && sel.nivelCombustivel < 15} />
                 <InfoRow icon={<MapPin size={14} />} label="Posição" value={`${sel.lat.toFixed(4)}, ${sel.lng.toFixed(4)}`} />
                 <div className="od-muted od-sm">Pontos de rota: {sel.rota.length}</div>
               </div>
@@ -226,9 +226,13 @@ export function MapaClient({ data }: { data: MapaFrota }) {
                       </td>
                       <td className="od-muted od-sm">{statusLabel[m.status]}</td>
                       <td className="od-right">
-                        <span className={(m.nivelCombustivel ?? 0) < 15 ? "od-fuel-low" : "od-muted"}>
-                          {m.nivelCombustivel ?? 0}%
-                        </span>
+                        {m.nivelCombustivel == null ? (
+                          <span className="od-muted">—</span>
+                        ) : (
+                          <span className={m.nivelCombustivel < 15 ? "od-fuel-low" : "od-muted"}>
+                            {m.nivelCombustivel}%
+                          </span>
+                        )}
                       </td>
                     </tr>
                   ))}
