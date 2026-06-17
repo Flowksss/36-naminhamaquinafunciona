@@ -4,8 +4,12 @@ import Link from "next/link";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
-import { ArrowLeft, Truck, User, Calendar, MapPin, Gauge, Fuel, Wrench, Clock, TrendingUp, TrendingDown } from "lucide-react";
+import { ArrowLeft, Truck, User, Calendar, MapPin, Gauge, Fuel, Wrench, Clock, TrendingUp, TrendingDown, Radio } from "lucide-react";
 import type { AtivoProfile } from "./queries";
+import { LeituraForm } from "./leitura-form";
+
+const fmtData = (d: Date | string | null) =>
+  d ? new Date(d).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }) : "sem leitura";
 
 const statusLabel: Record<string, string> = {
   EM_OPERACAO: "Em operação", NA_FILA: "Na fila", EM_TRANSITO: "Em trânsito", OCIOSO: "Ocioso", MANUTENCAO: "Manutenção",
@@ -42,6 +46,7 @@ export function AtivoProfileClient({ data }: { data: AtivoProfile }) {
           <Info icon={<MapPin size={14} />} label="Unidade" value={ativo.fazenda?.nome ?? "—"} />
           <Info icon={<Clock size={14} />} label="Horímetro" value={`${ativo.horimetroTotal.toLocaleString("pt-BR")} h`} />
           <Info icon={<Wrench size={14} />} label="Desde manut." value={`${Math.round(ativo.horasDesdeManutencao)} h`} />
+          <Info icon={<Radio size={14} />} label="Última leitura" value={fmtData(ativo.ultimaLeitura)} />
         </div>
       </div>
 
@@ -49,12 +54,12 @@ export function AtivoProfileClient({ data }: { data: AtivoProfile }) {
       <div className="od-kpis mt-4">
         <div className="od-panel od-kpi">
           <span className="od-kpilabel"><Gauge size={12} className="inline mr-1" />Consumo Atual</span>
-          <span className="od-kpivalue">{ativo.consumoAtual.toFixed(1)}<small> L/h</small></span>
+          <span className="od-kpivalue">{ativo.consumoAtual > 0 ? <>{ativo.consumoAtual.toFixed(1)}<small> L/h</small></> : "—"}</span>
         </div>
         <div className="od-panel od-kpi">
           <span className="od-kpilabel"><Fuel size={12} className="inline mr-1" />Combustível</span>
-          <span className="od-kpivalue" style={(ativo.nivelCombustivel ?? 0) < 15 ? { color: "var(--od-red)" } : undefined}>
-            {ativo.nivelCombustivel ?? 0}<small>%</small>
+          <span className="od-kpivalue" style={ativo.nivelCombustivel != null && ativo.nivelCombustivel < 15 ? { color: "var(--od-red)" } : undefined}>
+            {ativo.nivelCombustivel != null ? <>{ativo.nivelCombustivel}<small>%</small></> : "—"}
           </span>
         </div>
         <div className="od-panel od-kpi">
@@ -76,7 +81,7 @@ export function AtivoProfileClient({ data }: { data: AtivoProfile }) {
           <div className="od-panelhead"><h2>Consumo e Combustível por Ciclo</h2></div>
           <div className="p-4" style={{ height: 320 }}>
             {historico.length === 0 ? (
-              <div className="od-empty">Sem histórico. Avance a simulação.</div>
+              <div className="od-empty">Sem histórico. Registre uma leitura abaixo.</div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={historico} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
@@ -110,6 +115,14 @@ export function AtivoProfileClient({ data }: { data: AtivoProfile }) {
             ))}
           </div>
         </div>
+      </div>
+
+      {/* telemetria manual — Fase 0 (alimenta o motor de recomendações) */}
+      <div className="od-panel mt-4 max-w-3xl">
+        <div className="od-panelhead">
+          <h2 className="flex items-center gap-2"><Radio size={15} /> Nova leitura</h2>
+        </div>
+        <LeituraForm ativoId={ativo.id} />
       </div>
     </>
   );

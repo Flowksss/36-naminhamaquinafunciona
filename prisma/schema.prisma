@@ -233,6 +233,12 @@ model Ativo {
   ano            Int?
   operador       String?      // motorista/operador responsável
   horimetroTotal Float        @default(0) // horas totais acumuladas
+  // --- telemetria: origem do feed e identidade na nuvem do provedor ---
+  provedorTelemetria ProvedorTelemetria @default(MANUAL)
+  externalId     String?      // id da máquina no provedor (JD/CNH/Leaf)
+  vin            String?      // chassi (necessário p/ CNH/EULA)
+  marca          String?      // ex: "John Deere", "Case IH"
+  ultimaLeitura  DateTime?    // timestamp da última leitura de telemetria
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   posicoes       PosicaoGPS[]
@@ -263,6 +269,16 @@ enum TipoAtivo {
   TRATOR
   PULVERIZADOR
   OUTRO
+}
+
+// Origem do feed de telemetria de um ativo. MANUAL = leitura cadastrada à mão
+// (Fase 0). Os demais são provedores reais plugados pela interface
+// TelemetryProvider (ver src/lib/telemetry).
+enum ProvedorTelemetria {
+  MANUAL
+  JOHN_DEERE
+  CNH
+  LEAF
 }
 
 enum StatusAtivo {
