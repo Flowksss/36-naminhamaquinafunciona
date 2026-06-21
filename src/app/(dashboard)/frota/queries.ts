@@ -34,6 +34,9 @@ export async function getFrotaPageData() {
       ano: a.ano,
       lat: a.lat,
       lng: a.lng,
+      provedorTelemetria: a.provedorTelemetria,
+      externalId: a.externalId,
+      ultimaLeitura: a.ultimaLeitura,
     })),
   };
 }

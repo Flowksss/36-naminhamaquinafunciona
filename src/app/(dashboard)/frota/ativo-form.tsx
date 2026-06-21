@@ -21,6 +21,13 @@ const STATUS = [
   { v: "EM_TRANSITO", l: "Em trânsito" },
   { v: "MANUTENCAO", l: "Manutenção" },
 ];
+const PROVEDORES = [
+  { v: "MANUAL", l: "Manual" },
+  { v: "SIMULATOR", l: "SimWorld (simulador)" },
+  { v: "JOHN_DEERE", l: "John Deere" },
+  { v: "CNH", l: "CNH FieldOps" },
+  { v: "LEAF", l: "Leaf" },
+];
 
 function SubmitButton({ edit }: { edit: boolean }) {
   const { pending } = useFormStatus();
@@ -109,6 +116,16 @@ export function AtivoForm({
             <label className="od-label">Longitude</label>
             <input name="lng" defaultValue={ativo?.lng ?? ""} placeholder="-56.0" className="od-input" />
           </div>
+        </div>
+        <div className="space-y-1.5">
+          <label className="od-label">Fonte de telemetria</label>
+          <select name="provedorTelemetria" defaultValue={ativo?.provedorTelemetria ?? "MANUAL"} className="od-select">
+            {PROVEDORES.map((p) => <option key={p.v} value={p.v}>{p.l}</option>)}
+          </select>
+        </div>
+        <div className="space-y-1.5">
+          <label className="od-label">ID externo (provedor)</label>
+          <input name="externalId" defaultValue={ativo?.externalId ?? ""} placeholder="Ex: M-001 (no SimWorld)" className="od-input" />
         </div>
       </div>
 

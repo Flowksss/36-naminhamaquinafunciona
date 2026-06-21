@@ -3,11 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
-import { requireRole } from "@/lib/session";
+import { requireRole, requireOrgId } from "@/lib/session";
+import { sincronizarOrg } from "@/lib/telemetry/sync";
 import type { FormState } from "@/lib/types";
 
 const TIPOS = ["CAMINHAO", "COLHEDORA", "TRATOR", "PULVERIZADOR", "OUTRO"] as const;
 const STATUS = ["EM_OPERACAO", "NA_FILA", "EM_TRANSITO", "OCIOSO", "MANUTENCAO"] as const;
+const PROVEDORES = ["MANUAL", "SIMULATOR", "JOHN_DEERE", "CNH", "LEAF"] as const;
 
 function num(v: FormDataEntryValue | null): number | null {
   const s = String(v ?? "").trim().replace(",", ".");
@@ -31,6 +33,10 @@ function parseAtivo(formData: FormData) {
   const tipo = (TIPOS as readonly string[]).includes(tipoRaw) ? (tipoRaw as (typeof TIPOS)[number]) : "CAMINHAO";
   const status = (STATUS as readonly string[]).includes(statusRaw) ? (statusRaw as (typeof STATUS)[number]) : "OCIOSO";
 
+  const provedorRaw = String(formData.get("provedorTelemetria") ?? "MANUAL");
+  const provedorTelemetria = (PROVEDORES as readonly string[]).includes(provedorRaw) ? (provedorRaw as (typeof PROVEDORES)[number]) : "MANUAL";
+  const externalId = String(formData.get("externalId") ?? "").trim();
+
   const consumoMedio = num(formData.get("consumoMedio"));
   if (consumoMedio !== null && consumoMedio < 0) errors.consumoMedio = "Valor inválido";
 
@@ -43,6 +49,8 @@ function parseAtivo(formData: FormData) {
       operador: operador || null,
       tipo,
       status,
+      provedorTelemetria,
+      externalId: externalId || null,
       consumoMedio: consumoMedio ?? 0,
       capacidadeTanque: num(formData.get("capacidadeTanque")),
       lat: num(formData.get("lat")),
@@ -130,4 +138,35 @@ export async function deletarAtivo(id: string): Promise<FormState> {
   revalidatePath("/frota");
   revalidatePath("/mapa");
   return { ok: true, message: "Máquina excluída" };
+}
+
+/**
+ * Sincroniza a telemetria da org com o provedor (CCT SimWorld): puxa as
+ * leituras das máquinas marcadas como SIMULATOR (com ID externo) e alimenta
+ * o motor de recomendações com dado real-simulado.
+ */
+export async function sincronizarTelemetria(): Promise<FormState> {
+  let orgId: string;
+  try {
+    orgId = await requireOrgId();
+  } catch {
+    return { ok: false, message: "Sessão expirada. Entre novamente." };
+  }
+
+  try {
+    const n = await sincronizarOrg(orgId);
+    revalidatePath("/frota");
+    revalidatePath("/operacao");
+    revalidatePath("/mapa");
+    revalidatePath("/dashboard");
+    return {
+      ok: true,
+      message: n > 0
+        ? `${n} máquina(s) sincronizada(s) com o SimWorld.`
+        : "Nenhuma máquina ligada ao simulador. Defina Provedor = SIMULATOR e o ID externo (ex: M-001) na máquina.",
+    };
+  } catch {
+    const url = process.env.SIMWORLD_URL ?? "http://localhost:3100";
+    return { ok: false, message: `Falha ao conectar no SimWorld (${url}). Ele está rodando?` };
+  }
 }

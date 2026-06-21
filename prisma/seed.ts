@@ -12,12 +12,17 @@ const MODELOS = ["John Deere 8R", "Case IH Magnum", "New Holland T7", "Volvo FH 
 const OPERADORES = ["João Silva", "Maria Souza", "Pedro Alves", "Ana Lima", "Carlos Dias", "Rita Gomes", "Luís Rocha", "Marta Nunes"];
 const STATUS = ["EM_OPERACAO", "NA_FILA", "OCIOSO", "EM_TRANSITO"] as const;
 
-/** Cria frota + simulação + histórico para uma org (isolado por organizacaoId). */
-async function seedFrota(orgId: string, fazendaIds: string[], qtd: number, prefixo: string) {
+/**
+ * Cria frota + simulação + histórico para uma org (isolado por organizacaoId).
+ * linkSimAte: as primeiras N máquinas ficam ligadas ao SimWorld (provedor
+ * SIMULATOR, externalId M-001..) para demo do fluxo de telemetria real.
+ */
+async function seedFrota(orgId: string, fazendaIds: string[], qtd: number, prefixo: string, linkSimAte = 0) {
   const ativos = [];
   for (let i = 1; i <= qtd; i++) {
     const fazendaId = fazendaIds[i % fazendaIds.length];
     const consumoMedio = 10 + Math.round(Math.random() * 6); // 10-16 L/h (baseline fixo)
+    const ligadoSim = i <= linkSimAte;
     ativos.push({
       identificador: `${prefixo}-${String(i).padStart(2, "0")}`,
       tipo: "CAMINHAO" as const,
@@ -35,6 +40,8 @@ async function seedFrota(orgId: string, fazendaIds: string[], qtd: number, prefi
       ano: 2018 + (i % 7),
       operador: OPERADORES[i % OPERADORES.length],
       horimetroTotal: 2000 + Math.round(Math.random() * 6000),
+      provedorTelemetria: (ligadoSim ? "SIMULATOR" : "MANUAL") as "SIMULATOR" | "MANUAL",
+      externalId: ligadoSim ? `M-${String(i).padStart(3, "0")}` : null,
     });
   }
   await db.ativo.createMany({ data: ativos });
@@ -150,7 +157,7 @@ async function main() {
   // ============================================================
   // FROTA por organização (isolada)
   // ============================================================
-  await seedFrota(agroNorte.id, [saoJoao.id, boaVista.id], 12, "AN");
+  await seedFrota(agroNorte.id, [saoJoao.id, boaVista.id], 12, "AN", 3); // AN-01..03 ligadas ao SimWorld
   await seedFrota(valeVerde.id, [santaFe.id, primavera.id], 6, "VV");
 
   const counts = {

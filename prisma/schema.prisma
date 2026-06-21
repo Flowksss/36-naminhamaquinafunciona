@@ -276,6 +276,7 @@ enum TipoAtivo {
 // TelemetryProvider (ver src/lib/telemetry).
 enum ProvedorTelemetria {
   MANUAL
+  SIMULATOR
   JOHN_DEERE
   CNH
   LEAF

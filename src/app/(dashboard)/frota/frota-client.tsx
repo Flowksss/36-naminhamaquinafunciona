@@ -3,10 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Plus, Pencil, Trash2, Truck, MapPin } from "lucide-react";
+import { Plus, Pencil, Trash2, Truck, MapPin, RefreshCw } from "lucide-react";
 import type { FrotaPageData, AtivoItem } from "./queries";
 import { AtivoForm } from "./ativo-form";
-import { deletarAtivo } from "./actions";
+import { deletarAtivo, sincronizarTelemetria } from "./actions";
 
 const statusLabel: Record<string, string> = {
   EM_OPERACAO: "Em operação", NA_FILA: "Na fila", EM_TRANSITO: "Em trânsito", OCIOSO: "Ocioso", MANUTENCAO: "Manutenção",
@@ -18,6 +18,15 @@ export function FrotaClient({ data }: { data: FrotaPageData }) {
   const router = useRouter();
   const [modo, setModo] = useState<Modo>({ tipo: "lista" });
   const [removendo, setRemovendo] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
+
+  async function sincronizar() {
+    setSyncing(true);
+    const res = await sincronizarTelemetria();
+    setSyncing(false);
+    if (res.message) alert(res.message);
+    router.refresh();
+  }
 
   async function remover(a: AtivoItem) {
     if (!confirm(`Excluir a máquina ${a.identificador}? Esta ação não pode ser desfeita.`)) return;
@@ -40,9 +49,14 @@ export function FrotaClient({ data }: { data: FrotaPageData }) {
       <header className="od-topbar">
         <div className="od-title">Frota <span>Máquinas</span></div>
         {!semUnidade && modo.tipo === "lista" && (
-          <button className="od-btn" onClick={() => setModo({ tipo: "nova" })}>
-            <Plus size={16} /> Nova Máquina
-          </button>
+          <div className="flex items-center gap-2">
+            <button className="od-btn od-btn-secondary" onClick={sincronizar} disabled={syncing} title="Puxa telemetria do SimWorld para as máquinas marcadas como SIMULATOR">
+              <RefreshCw size={16} className={syncing ? "od-spin" : ""} /> {syncing ? "Sincronizando..." : "Sincronizar telemetria"}
+            </button>
+            <button className="od-btn" onClick={() => setModo({ tipo: "nova" })}>
+              <Plus size={16} /> Nova Máquina
+            </button>
+          </div>
         )}
       </header>
 
