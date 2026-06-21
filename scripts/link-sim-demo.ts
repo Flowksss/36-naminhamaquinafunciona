@@ -10,10 +10,12 @@ async function main() {
   if (!an01) throw new Error("AN-01 não encontrada — rode o seed primeiro.");
   const orgId = an01.organizacaoId;
 
+  // baseline = consumo normal da máquina equivalente no SimWorld (colhedora/trator)
+  const baseline: Record<number, number> = { 1: 51, 2: 24, 3: 51 };
   for (const i of [1, 2, 3]) {
     await db.ativo.updateMany({
       where: { identificador: `AN-0${i}`, organizacaoId: orgId },
-      data: { provedorTelemetria: "SIMULATOR", externalId: `M-00${i}` },
+      data: { provedorTelemetria: "SIMULATOR", externalId: `M-00${i}`, consumoMedio: baseline[i] },
     });
   }
 

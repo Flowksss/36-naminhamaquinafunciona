@@ -12,6 +12,11 @@ const MODELOS = ["John Deere 8R", "Case IH Magnum", "New Holland T7", "Volvo FH 
 const OPERADORES = ["João Silva", "Maria Souza", "Pedro Alves", "Ana Lima", "Carlos Dias", "Rita Gomes", "Luís Rocha", "Marta Nunes"];
 const STATUS = ["EM_OPERACAO", "NA_FILA", "OCIOSO", "EM_TRANSITO"] as const;
 
+// Consumo normal (L/h) das máquinas equivalentes no SimWorld (M-001 colhedora,
+// M-002 trator, M-003 colhedora). Usado como baseline das máquinas ligadas ao
+// simulador, para o alerta de consumo só disparar na anomalia (1.5x).
+const SIM_BASELINE: Record<string, number> = { "M-001": 51, "M-002": 24, "M-003": 51 };
+
 /**
  * Cria frota + simulação + histórico para uma org (isolado por organizacaoId).
  * linkSimAte: as primeiras N máquinas ficam ligadas ao SimWorld (provedor
@@ -21,8 +26,11 @@ async function seedFrota(orgId: string, fazendaIds: string[], qtd: number, prefi
   const ativos = [];
   for (let i = 1; i <= qtd; i++) {
     const fazendaId = fazendaIds[i % fazendaIds.length];
-    const consumoMedio = 10 + Math.round(Math.random() * 6); // 10-16 L/h (baseline fixo)
     const ligadoSim = i <= linkSimAte;
+    const externalId = ligadoSim ? `M-${String(i).padStart(3, "0")}` : null;
+    // Baseline = consumo normal da máquina equivalente no SimWorld, para o
+    // alerta de consumo disparar só na anomalia (não permanentemente).
+    const consumoMedio = (externalId && SIM_BASELINE[externalId]) || 10 + Math.round(Math.random() * 6);
     ativos.push({
       identificador: `${prefixo}-${String(i).padStart(2, "0")}`,
       tipo: "CAMINHAO" as const,
@@ -41,7 +49,7 @@ async function seedFrota(orgId: string, fazendaIds: string[], qtd: number, prefi
       operador: OPERADORES[i % OPERADORES.length],
       horimetroTotal: 2000 + Math.round(Math.random() * 6000),
       provedorTelemetria: (ligadoSim ? "SIMULATOR" : "MANUAL") as "SIMULATOR" | "MANUAL",
-      externalId: ligadoSim ? `M-${String(i).padStart(3, "0")}` : null,
+      externalId,
     });
   }
   await db.ativo.createMany({ data: ativos });
