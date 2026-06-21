@@ -117,6 +117,19 @@ npm run dev
 
 ---
 
+## 📡 Telemetria
+
+O motor de recomendações roda sobre dado **real** que flui de um provedor de
+telemetria (manual → simulador → API OEM), sem simulação aleatória. Arquitetura,
+seam de ingestão e como plugar um provider novo (Leaf/John Deere/CNH):
+**[docs/TELEMETRY.md](docs/TELEMETRY.md)**.
+
+Projeto irmão **[CCT SimWorld](../cct-simworld)** — mundo de máquinas virtuais
+com física real, exposto no formato das APIs OEM, para o CCT consumir como se
+fosse telemetria de verdade (`Operação → Auto` mostra o motor reagindo ao vivo).
+
+---
+
 ## 🏆 Hackathon
 
 Projeto desenvolvido em hackathon. Construído com colaboração multi-agente (Claude Code, Gemini).
