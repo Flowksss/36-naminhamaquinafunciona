@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { EstadoFrota } from "./queries";
+import { TelemetrySync } from "@/components/telemetry-sync";
 import {
   AlertTriangle, Fuel, ArrowRightLeft, Users, Wrench, type LucideIcon,
 } from "lucide-react";
@@ -40,6 +41,7 @@ export function OperacaoClient({ estado }: { estado: EstadoFrota }) {
         <div className="od-title">
 CCT <span>SINCRO</span> · Centro de Operações
         </div>
+        <TelemetrySync />
       </header>
 
       <section className="od-kpis">
