@@ -165,8 +165,9 @@ export async function sincronizarTelemetria(): Promise<FormState> {
         ? `${n} máquina(s) sincronizada(s) com o SimWorld.`
         : "Nenhuma máquina ligada ao simulador. Defina Provedor = SIMULATOR e o ID externo (ex: M-001) na máquina.",
     };
-  } catch {
+  } catch (e) {
     const url = process.env.SIMWORLD_URL ?? "http://localhost:3100";
-    return { ok: false, message: `Falha ao conectar no SimWorld (${url}). Ele está rodando?` };
+    const detalhe = e instanceof Error && e.message ? e.message : `Falha ao conectar no SimWorld (${url}). Ele está rodando?`;
+    return { ok: false, message: detalhe };
   }
 }

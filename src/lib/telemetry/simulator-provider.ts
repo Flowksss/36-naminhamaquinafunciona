@@ -28,7 +28,22 @@ export const simulatorProvider: TelemetryProvider = {
     });
     if (ativos.length === 0) return [];
 
-    const res = await fetch(`${SIMWORLD_URL}/api/world`, { cache: "no-store" });
+    // timeout controlado (8s) — menor que o limite da função Vercel (10s no
+    // hobby). Evita 504 feio quando o host do SimWorld está em cold start
+    // (Render free dorme e leva ~50s pra acordar). Falha rápido e claro.
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 8000);
+    let res: Response;
+    try {
+      res = await fetch(`${SIMWORLD_URL}/api/world`, { cache: "no-store", signal: ctrl.signal });
+    } catch (e) {
+      if (e instanceof Error && e.name === "AbortError") {
+        throw new Error("SimWorld não respondeu a tempo (provável cold start — acesse a URL e tente de novo).");
+      }
+      throw new Error("SimWorld inacessível.");
+    } finally {
+      clearTimeout(t);
+    }
     if (!res.ok) throw new Error(`SimWorld respondeu ${res.status}`);
     const world = (await res.json()) as SimWorld;
     const byExternal = new Map(world.machines.map((m) => [m.id, m]));
